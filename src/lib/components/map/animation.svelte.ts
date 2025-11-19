@@ -45,7 +45,6 @@ export function startAnimation() {
   if (timeframe == "day") {
     endDate.setTime(startDate.getTime() + day);
   } else if (timeframe == "week") {
-    console.log('week!!!');
     endDate.setTime(startDate.getTime() + day * 7);
   } else if (timeframe == "month") {
     endDate.setMonth((startDate.getMonth() + 1) % 12);

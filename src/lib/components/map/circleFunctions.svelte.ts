@@ -12,6 +12,7 @@ import {
   circleMetrics,
   circleMetric,
   circlesRendered,
+  showCircles,
 } from "./mapStates.svelte";
 import { getScaleRange, normalizeCountryName } from "./utils";
 import type { CircleMetric } from "@data-types/metrics";
@@ -61,9 +62,9 @@ function mapCircleMetrics(
   const circleMetricEntries = Object.entries(circleMetrics.state);
   for (let i = 0; i < circleMetricEntries.length; i++) {
     let [country, cities] = circleMetricEntries[i];
-    cities = Object.keys(cities || {});
-    for (let j = 0; j < cities.length; j++) {
-      fn(country, cities[j], state[country][cities[j]]);
+    let cityKeys = Object.keys(cities || {});
+    for (let j = 0; j < cityKeys.length; j++) {
+      fn(country, cityKeys[j], state[country][cityKeys[j]]);
     }
   }
 }
@@ -244,6 +245,7 @@ export function renderCircles(projection: any, targetG: SVGGElement | null) {
     return;
   }
 
+  console.log('rendering circles');
   currentMetric = metric; // Update current metric
 
   const geoData = cityGeoData.state;
@@ -296,7 +298,7 @@ export function renderCircles(projection: any, targetG: SVGGElement | null) {
     .attr("cy", (d) => d.y)
     .attr("r", (d: any) => {
       const absValue = metric === "profit" ? Math.abs(d.metricValue) : d.metricValue;
-      return radiusScale(absValue);
+      return showCircles.state ? radiusScale(absValue) : 0;
     })
     .attr("fill", (d) =>
       metric === "profit" && d.metricValue < 0
@@ -332,7 +334,6 @@ export function renderCircles(projection: any, targetG: SVGGElement | null) {
           : "rgba(255, 100, 0, 0.6)";
       d3.select(this)
         .attr("fill", normalFill)
-        //@ts-ignore this will not be null
         .attr("r", radiusScale(absValue));
 
       const tt = tooltip.state;

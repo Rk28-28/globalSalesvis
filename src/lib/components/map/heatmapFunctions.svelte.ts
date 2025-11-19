@@ -11,9 +11,11 @@ import {
   heatmapMetrics,
   heatmapMetric,
   legendData,
+  showHeatmap,
 } from "./mapStates.svelte";
 import { getMostCommonCategory, normalizeCountryName } from "./utils";
 import type { HeatmapMetric } from "@data-types/metrics";
+import { showTooltip, hideTooltip } from "./tooltip.svelte";
 
 let colorScale: d3.ScaleSequential<string> | null = null;
 
@@ -154,6 +156,39 @@ export function updateHeatmap(
         path.attr("fill", "#e0e0e0").attr("stroke", "#999").attr("stroke-width", 0.5);
       }
     });
+
+          if (showHeatmap.state) {
+        // Add hover interactions for heatmap
+        d3.select(g.state)
+          .selectAll("path")
+          .each(function () {
+            const path = d3.select(this);
+            const countryName = path.attr("data-country");
+            const countryData = heatmapMetrics.state[countryName];
+
+            path
+              .on("mouseover", function (event) {
+                path.attr("opacity", 0.7);
+                showTooltip(event, countryName, countryData, heatmapMetric.state);
+              })
+              .on("mouseout", function () {
+                path.attr("opacity", 1);
+                hideTooltip();
+              })
+              .on("mousemove", function (event) {
+                showTooltip(event, countryName, countryData, heatmapMetric.state);
+              });
+          });
+      } else {
+        // Remove hover interactions
+        d3.select(g.state)
+          .selectAll("path")
+          .on("mouseover", null)
+          .on("mouseout", null)
+          .on("mousemove", null)
+          .attr("opacity", 1);
+        hideTooltip();
+      }
 }
 
 function setupColorScale(metric: HeatmapMetric, data: Record<string, any>) {
