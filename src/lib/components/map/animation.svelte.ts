@@ -34,6 +34,7 @@ export function startAnimation() {
   let endDate = new Date(endDateRaw.state);
 
   if (isNaN(startDate.getTime()) && dataStartDate.state) {
+    console.log(dataStartDate.state);
     startDate = dataStartDate.state;
   }
   if (isNaN(endDate.getTime()) && dataEndDate.state) {
@@ -104,8 +105,8 @@ export function handleDelayChange() {
 }
 
 function restoreDates() {
-  startDateRaw.state = originalStartDate || "";
-  endDateRaw.state = originalEndDate || "";
+  startDateRaw.state = "";
+  endDateRaw.state = "";
 
   originalStartDate = "";
   originalEndDate = "";

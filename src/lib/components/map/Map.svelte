@@ -47,7 +47,6 @@
   } from "./heatmapFunctions.svelte";
   import { renderCountryOverlay } from "./countryOverlay.svelte";
   import { circleMetricLabels, heatmapMetricLabels } from "@data-types/metrics";
-  import { hideTooltip, showTooltip } from "./tooltip.svelte";
   import "./mapStyles.css";
 
   // make the props as minimal as possible so that other people can easily hook into the map
@@ -80,6 +79,7 @@
     cityGeoData.state = await loadCityLatLngData();
     loadCountries(projection);
     loadStartEndDate();
+    renderCircles(projection, g.state);
   });
 
   $effect(() => {
@@ -135,39 +135,6 @@
         showHeatmap.state,
         heatmapMetric.state,
       );
-
-      if (showHeatmap.state) {
-        // Add hover interactions for heatmap
-        d3.select(g.state)
-          .selectAll("path")
-          .each(function () {
-            const path = d3.select(this);
-            const countryName = path.attr("data-country");
-            const countryData = heatmapMetrics.state[countryName];
-
-            path
-              .on("mouseover", function (event) {
-                path.attr("opacity", 0.7);
-                showTooltip(event, countryName, countryData, heatmapMetric.state);
-              })
-              .on("mouseout", function () {
-                path.attr("opacity", 1);
-                hideTooltip();
-              })
-              .on("mousemove", function (event) {
-                showTooltip(event, countryName, countryData, heatmapMetric.state);
-              });
-          });
-      } else {
-        // Remove hover interactions
-        d3.select(g.state)
-          .selectAll("path")
-          .on("mouseover", null)
-          .on("mouseout", null)
-          .on("mousemove", null)
-          .attr("opacity", 1);
-        hideTooltip();
-      }
     }
   });
 
@@ -176,9 +143,13 @@
     if (!svg.state) return;
 
     if (showCircles.state) {
-      d3.select(svg.state).selectAll("circle").attr("display", "block");
+      d3.select(svg.state)
+        .selectAll("circle")
+        .attr("display", "block");
     } else {
-      d3.select(svg.state).selectAll("circle").attr("display", "none");
+      d3.select(svg.state)
+        .selectAll("circle")
+        .attr("display", "none");
     }
   });
 
