@@ -22,6 +22,7 @@ let endDate = $derived<Date>(new Date(endDateRaw.state));
 let currentMetric = $state<CircleMetric>("orders"); // Track current metric
 let lastMetric = "";
 let radiusScale: any | null;
+let allCities = new Set<string>();
 
 export function updateRadiusScale() {
   // don't update if metric has not changed
@@ -52,16 +53,19 @@ export function updateRadiusScale() {
 }
 
 // loops over city buckets and applies callback function with city and country
+// use for loops instead of forEach beucase of the performance gains
 function mapCircleMetrics(
   fn: (country: string, city: string, cm: CircleMetricData) => void,
 ) {
   const state = circleMetrics.state;
-
-  Object.entries(circleMetrics.state).forEach(([country, cities]) => {
-    Object.keys(cities || {}).forEach((city) =>
-      fn(country, city, state[country][city]),
-    );
-  });
+  const circleMetricEntries = Object.entries(circleMetrics.state);
+  for (let i = 0; i < circleMetricEntries.length; i++) {
+    let [country, cities] = circleMetricEntries[i];
+    cities = Object.keys(cities || {});
+    for (let j = 0; j < cities.length; j++) {
+      fn(country, cities[j], state[country][cities[j]]);
+    }
+  }
 }
 
 // batch updates city buckets variable
@@ -75,51 +79,50 @@ export function updateCircleMetrics(): typeof circleMetrics.state {
   const end = endDate;
 
   for (let i = 0; i < orderData.state.length; i++) {
-    const order = orderData.state[i];
-    const orderDate = new Date(order.orderDate);
+      const order = orderData.state[i];
+      const orderDate = new Date(order.orderDate);
 
-    // Check if order is within date range
-    if ((start && orderDate < start) || (end && orderDate > end)) continue;
+      // Check if order is within date range
+      if ((start && orderDate < start) || (end && orderDate > end)) continue;
 
-    const country = order.country;
-    const city = order.city;
+      const country = order.country;
+      const city = order.city;
 
-    // Initialize if needed
-    if (!out[country]) out[country] = {};
-    if (!metricsOut[country]) metricsOut[country] = {};
-    if (!metricsOut[country][city]) {
-      metricsOut[country][city] = {
-        orders: 0,
-        sales: 0,
-        profit: 0,
-        quantity: 0,
-        shipping: 0,
-        discount: 0,
-        maxDiscount: 0,
-      };
-    }
+      // Initialize if needed
+      if (!out[country]) out[country] = {};
+      if (!metricsOut[country]) metricsOut[country] = {};
+      if (!metricsOut[country][city]) {
+          metricsOut[country][city] = {
+              orders: 0,
+              sales: 0,
+              profit: 0,
+              quantity: 0,
+              shipping: 0,
+              discount: 0,
+              maxDiscount: 0,
+          };
+      }
 
-    // Update counts
-    out[country][city] = (out[country][city] || 0) + 1;
+      // Store a reference to the nested object
+      const cityMetrics = metricsOut[country][city];
 
-    // Update metric values
-    metricsOut[country][city].orders += 1;
-    metricsOut[country][city].sales += order.sales || 0;
-    metricsOut[country][city].profit += order.profit || 0;
-    metricsOut[country][city].quantity += order.quantity || 0;
-    metricsOut[country][city].shipping += order.shippingCost || 0;
-    metricsOut[country][city].discount += order.discount || 0;
-    metricsOut[country][city].maxDiscount = Math.max(
-      metricsOut[country][city].maxDiscount,
-      order.discount || 0,
-    );
+      // Update counts
+      out[country][city] = (out[country][city] || 0) + 1;
+
+      // Update metric values using the local reference
+      cityMetrics.orders += 1;
+      cityMetrics.sales += order.sales || 0;
+      cityMetrics.profit += order.profit || 0;
+      cityMetrics.quantity += order.quantity || 0;
+      cityMetrics.shipping += order.shippingCost || 0;
+      cityMetrics.discount += order.discount || 0;
+      cityMetrics.maxDiscount = Math.max(cityMetrics.maxDiscount, order.discount || 0);
   }
 
   return metricsOut;
 }
 
 // updates the size of circles on the map whenever cityFreqs updates
-// TODO: make circles dissappear if their values are not present
 export function updateCircleSize() {
   if (!circlesRendered.state || radiusScale == null) {
     return;
@@ -127,10 +130,12 @@ export function updateCircleSize() {
 
   const metric = circleMetric.state;
 
+  let shownCities = new Set<string>();
   mapCircleMetrics((country, city, data) => {
     const q = `${city}-${country}`;
     const circle = svg.state?.getElementById(q);
     if (circle) {
+      shownCities.add(`${city}-${country}`);
       const value = data[circleMetric.state];
       const radius =
         metric === "profit" ? radiusScale(Math.abs(value)) : radiusScale(value);
@@ -148,6 +153,18 @@ export function updateCircleSize() {
         .attr("fill", fill);
     }
   });
+  
+  // keep track of all hidden cities not shown
+  let hiddenCities = Array.from(allCities.difference(shownCities));
+  for (let i = 0; i < hiddenCities.length; i++) {
+    const circle = svg.state?.getElementById(hiddenCities[i]);
+    if (circle) {
+      d3.select(circle)
+        .transition()
+        .duration(animationDelay.state)
+        .attr("r", 0);
+    }
+  }
 }
 
 // Format metric value for display in tooltip
@@ -198,36 +215,6 @@ function formatTooltip(city: string, country: string): string {
   }
 }
 
-// Format metric value for display
-function formatMetricValue(value: number): string {
-  switch (circleMetric.state) {
-    case "discount":
-      return `${(value * 100).toFixed(1)}%`;
-    case "sales":
-    case "profit":
-    case "shipping":
-      return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    case "quantity":
-    case "orders":
-      return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
-    default:
-      return value.toLocaleString("en-US");
-  }
-}
-
-// Get metric label
-function getMetricLabel(): string {
-  const labels: Record<CircleMetric, string> = {
-    orders: "Orders",
-    profit: "Profit",
-    sales: "Sales",
-    quantity: "Quantity",
-    shipping: "Shipping Cost",
-    discount: "Avg Discount",
-  };
-  return labels[circleMetric.state];
-}
-
 // renders circles on the map. should only really be used once
 export function renderCircles(projection: any, targetG: SVGGElement | null) {
   if (!orderData.state.length || !targetG || !cityGeoData.state || !radiusScale) {
@@ -248,7 +235,6 @@ export function renderCircles(projection: any, targetG: SVGGElement | null) {
   }
 
   if (circlesRendered.state && selectedCountry.state === "") {
-    console.log("circles have already been rendered");
     return;
   }
 
@@ -275,6 +261,9 @@ export function renderCircles(projection: any, targetG: SVGGElement | null) {
       return;
     }
 
+    // initial rendering should be called with all data
+    allCities.add(`${city}-${country}`);
+
     const normalizedCountry = normalizeCountryName(country);
     const [x, y] = projection([
       geoData[country][city].lng,
@@ -297,7 +286,6 @@ export function renderCircles(projection: any, targetG: SVGGElement | null) {
     });
   });
   cityData = cityData.filter((d) => d !== null);
-  console.log(cityData);
 
   cityGroup
     .selectAll("circle")

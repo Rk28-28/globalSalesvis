@@ -25,6 +25,7 @@
     heatmapMetric,
     heatmapMetrics,
     legendData,
+    dataStartDate,
   } from "./mapStates.svelte";
   import {
     updateCircleMetrics,
@@ -79,6 +80,7 @@
     geography.state = await loadGeographyData();
     cityGeoData.state = await loadCityLatLngData();
     loadCountries(projection);
+    renderCircles();
     loadStartEndDate();
   });
 
