@@ -68,8 +68,7 @@
     height = 650,
   }: Props = $props();
 
-  const projection = d3
-    .geoMercator()
+  const projection = d3.geoMercator()
     .scale(150)
     .translate([width / 2, height / 1.5]);
 

@@ -217,7 +217,7 @@ function formatTooltip(city: string, country: string): string {
 }
 
 // renders circles on the map. should only really be used once
-export function renderCircles(projection: any, targetG: SVGGElement | null) {
+export function renderCircles(projection: d3.GeoProjection, targetG: SVGGElement | null) {
   if (!orderData.state.length || !targetG || !cityGeoData.state || !radiusScale) {
     return;
   }
@@ -288,6 +288,7 @@ export function renderCircles(projection: any, targetG: SVGGElement | null) {
     });
   });
   cityData = cityData.filter((d) => d !== null);
+
 
   cityGroup
     .selectAll("circle")

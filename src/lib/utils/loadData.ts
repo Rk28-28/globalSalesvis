@@ -73,9 +73,7 @@ export async function loadGeographyData(): Promise<any> {
   //     return world;
   // }
 
-  const world: any = await d3.json(
-    "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson",
-  );
+  const world: any = await d3.json("/data/geo.json");
   // localStorage.setItem("world", JSON.stringify(world));
   return world;
 }
