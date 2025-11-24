@@ -4,7 +4,7 @@ export type City = {
   count: number;
 };
 
-export type CityData = {
+export type CircleData = {
   city: string;
   country: string;
   normalizedCountry: string;
@@ -12,7 +12,7 @@ export type CityData = {
   y: number;
 };
 
-export type CityGeoData = {
+export type CircleGeoData = {
   city: string;
   country: string;
   lat: number;

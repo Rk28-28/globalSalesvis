@@ -1,7 +1,7 @@
 // The purpose of this file is so that we can use these states across many .svelte and .svelte.ts files
 // I know it looks stupid, but it's really good for code reusability
 import type { Order } from "@data-types/order";
-import type { CircleMetricData } from "@data-types/cityData";
+import type { CircleMetricData } from "@data-types/circleData";
 import type { HeatmapMetric, CircleMetric } from "@data-types/metrics";
 
 export type StateWrapper<T> = { state: T };
@@ -14,10 +14,11 @@ function makeStateWrapper<T>(p: T): StateWrapper<T> {
 type AnimationState = "playing" | "paused" | "stopped";
 
 let orderData = $state<StateWrapper<Order[]>>(makeStateWrapper([]));
-let cityGeoData = $state<any>(makeStateWrapper(null));
+let circleGeoData = $state<any>(makeStateWrapper(null));
 let geography = $state<any>(makeStateWrapper(null));
 let countriesLoading = $state<StateWrapper<boolean>>(makeStateWrapper(true));
 let selectedCountry = $state<StateWrapper<string>>(makeStateWrapper(""));
+let mapContainer = $state<StateWrapper<HTMLDivElement|null>>(makeStateWrapper(null));
 
 // circle states
 let circleMetrics = $state<
@@ -66,7 +67,7 @@ let animationDelay = $state<StateWrapper<number>>(makeStateWrapper(100));
 export {
   circlesRendered,
   orderData,
-  cityGeoData,
+  circleGeoData,
   geography,
   selectedCountry,
   countriesLoading,
@@ -89,4 +90,5 @@ export {
   animationTimeframe,
   animationPlaying,
   animationDelay,
+  mapContainer,
 };

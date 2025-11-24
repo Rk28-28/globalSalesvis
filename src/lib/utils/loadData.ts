@@ -1,5 +1,5 @@
 import { asset } from "$app/paths";
-import type { CityGeoData } from "@data-types/cityData";
+import type { CircleGeoData } from "@data-types/circleData";
 import type { Order } from "@data-types/order";
 import * as d3 from "d3";
 import Papa from "papaparse";
@@ -36,7 +36,7 @@ function orderFromCSV(csv: any): Order {
   };
 }
 
-function cityGeoFromCSV(csv: any): CityGeoData {
+function cityGeoFromCSV(csv: any): CircleGeoData {
   return {
     city: csv["city"],
     country: csv["country"],

@@ -69,21 +69,57 @@ export function getHeatmapMetricData(
   return out;
 }
 
-export function loadCountries(projection: any) {
-  if (!geography.state) {
+let countrySelection: any | null = null;
+let animationFrameId: number | null = null;
+
+export function updateCountries(projection: d3.GeoProjection) {
+  if (!countrySelection || countrySelection.empty()) {
+    console.error("Country selection is not initialized");
     return;
   }
+
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+  }
+
+  animationFrameId = requestAnimationFrame(() => {
+    const path = d3.geoPath().projection(projection);
+    countrySelection.attr("d", (d: any) => path(d));
+    animationFrameId = null;
+  });
+}
+
+export function loadCountries(projection: d3.GeoProjection, loaders: boolean = false) {
+  countriesLoading.state = loaders;
+
   if (!g.state) {
-    console.error("g is not defined");
+    console.error("g.state is not initialized");
     return;
   }
+
+  if (!geography.state || !geography.state.features || geography.state.features.length === 0) {
+    console.error("geography state is not empty");
+    return;
+  }
+
   const path = d3.geoPath().projection(projection);
-  countriesLoading.state = true;
-  const geographyState = geography.state;
-  const selection = d3
+
+  countrySelection = d3
     .select(g.state)
-    .selectAll("path")
-    .data(geographyState.features)
+    .selectAll<SVGPathElement, any>("path")
+    .data(geography.state.features);
+
+  countrySelection
+    .attr("d", (d: any) => path(d))
+    .attr("fill", "#e0e0e0")
+    .attr("stroke", "#999")
+    .attr("stroke-width", 0.5)
+    .attr(
+      "data-country",
+      (d: any, i: number) => geography.state.features[i].properties.name,
+    );
+
+  countrySelection = countrySelection
     .enter()
     .append("path")
     .attr("d", (d: any) => path(d))
@@ -92,16 +128,13 @@ export function loadCountries(projection: any) {
     .attr("stroke-width", 0.5)
     .attr(
       "data-country",
-      (d: any, i: number) => geographyState.features[i].properties.name,
-    );
-
-  selection.each((d: any, i, nodes) => {
-    const ele = nodes[i];
-    const country = geographyState.features[i].properties.name;
-    d3.select(ele).on("click", () => {
-      selectedCountry.state = selectedCountry.state == country ? "" : country;
+      (d: any, i: number) => geography.state.features[i].properties.name,
+    )
+    .on("click", function (_, d) {
+      const country = d.properties.name;
+      selectedCountry.state = selectedCountry.state === country ? "" : country;
     });
-  });
+
   countriesLoading.state = false;
 }
 

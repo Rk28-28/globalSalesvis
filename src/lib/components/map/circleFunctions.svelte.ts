@@ -1,7 +1,7 @@
 import * as d3 from "d3";
-import type { CityData } from "@data-types/cityData";
+import type { CircleData } from "@data-types/circleData";
 import {
-  cityGeoData,
+  circleGeoData,
   startDateRaw,
   endDateRaw,
   svg,
@@ -16,7 +16,7 @@ import {
 } from "./mapStates.svelte";
 import { getScaleRange, normalizeCountryName } from "./utils";
 import type { CircleMetric } from "@data-types/metrics";
-import type { CircleMetricData } from "@data-types/cityData";
+import type { CircleMetricData } from "@data-types/circleData";
 
 let startDate = $derived<Date>(new Date(startDateRaw.state));
 let endDate = $derived<Date>(new Date(endDateRaw.state));
@@ -216,9 +216,51 @@ function formatTooltip(city: string, country: string): string {
   }
 }
 
+// d3.selection
+let circleGroup: d3.Selection<SVGGElement, unknown, null, undefined> | null = null;
+export function updateCircleLocations(projection: d3.GeoProjection) {
+  if (!circleGroup || circleGroup.empty()) {
+    console.error("Circle group is empty, cannot update locations");
+    return;
+  }
+
+  const geoData = circleGeoData.state;
+
+  // Define the visible bounds (adjust based on your SVG dimensions)
+  const svgWidth = svg.state?.clientWidth || 800; // Default width
+  const svgHeight = svg.state?.clientHeight || 400; // Default height
+
+  // Update the position of each circle
+  circleGroup.selectAll("circle").each(function (d: any) {
+    const city = d.city;
+    const country = d.country;
+
+    if (!geoData[country] || !geoData[country][city]) {
+      return;
+    }
+
+    const [lng, lat] = [geoData[country][city].lng, geoData[country][city].lat];
+    const [x, y] = projection([lng, lat]) || [null, null];
+
+    if (x !== null && y !== null) {
+      // Check if the circle is within the visible bounds
+      if (x < 0 || x > svgWidth || y < 0 || y > svgHeight) {
+        // Hide the circle if it's out of bounds
+        d3.select(this).attr("display", "none");
+      } else {
+        // Show the circle and update its position
+        d3.select(this)
+          .attr("display", "block")
+          .attr("cx", x)
+          .attr("cy", y);
+      }
+    }
+  });
+}
+
 // renders circles on the map. should only really be used once
 export function renderCircles(projection: d3.GeoProjection, targetG: SVGGElement | null) {
-  if (!orderData.state.length || !targetG || !cityGeoData.state || !radiusScale) {
+  if (!orderData.state.length || !targetG || !circleGeoData.state || !radiusScale) {
     return;
   }
 
@@ -245,16 +287,15 @@ export function renderCircles(projection: d3.GeoProjection, targetG: SVGGElement
     return;
   }
 
-  console.log('rendering circles');
   currentMetric = metric; // Update current metric
 
-  const geoData = cityGeoData.state;
-  const cityGroup = d3.select(targetG).append("g").attr("class", "cities");
+  const geoData = circleGeoData.state;
+  circleGroup = d3.select(targetG).append("g").attr("class", "cities");
   if (selectedCountry.state === "USA") {
     selectedCountry.state = "United States";
   } // very hacky fix for the naming mismatch between country and selectedCountry.state
 
-  let cityData: (CityData & { metricValue: number })[] = [];
+  let circleData: (CircleData & { metricValue: number })[] = [];
   mapCircleMetrics((country, city, data) => {
     if (!geoData[country] || !geoData[country][city]) {
       return;
@@ -278,7 +319,7 @@ export function renderCircles(projection: d3.GeoProjection, targetG: SVGGElement
 
     const metricValue = data[metric];
 
-    cityData.push({
+    circleData.push({
       city,
       country,
       normalizedCountry,
@@ -287,12 +328,12 @@ export function renderCircles(projection: d3.GeoProjection, targetG: SVGGElement
       metricValue,
     });
   });
-  cityData = cityData.filter((d) => d !== null);
+  circleData = circleData.filter((d) => d !== null);
 
 
-  cityGroup
+  circleGroup
     .selectAll("circle")
-    .data(cityData)
+    .data(circleData)
     .join("circle")
     .attr("id", (d) => `${d.city}-${d.country}`)
     .attr("cx", (d) => d.x)

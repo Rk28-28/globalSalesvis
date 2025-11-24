@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { Order } from "@data-types/order";
   import * as d3 from "d3";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { loadCityLatLngData, loadGeographyData } from "@utils/loadData";
   import { Loader } from "@components/loader";
   import {
     orderData,
-    cityGeoData,
+    circleGeoData,
     geography,
     showCircles,
     startDateRaw,
@@ -25,6 +25,7 @@
     heatmapMetric,
     heatmapMetrics,
     legendData,
+    mapContainer
   } from "./mapStates.svelte";
   import {
     updateCircleMetrics,
@@ -45,9 +46,9 @@
     updateHeatmap,
     updateHeatmapMetricDataWithDateFilter,
   } from "./heatmapFunctions.svelte";
-  import { renderCountryOverlay } from "./countryOverlay.svelte";
   import { circleMetricLabels, heatmapMetricLabels } from "@data-types/metrics";
   import "./mapStyles.css";
+  import { destroyGlobeEventListeners, registerGlobeEventListeners } from "./globeFunctions";
 
   // make the props as minimal as possible so that other people can easily hook into the map
   type Props = {
@@ -68,18 +69,23 @@
     height = 650,
   }: Props = $props();
 
-  const projection = d3.geoMercator()
-    .scale(150)
-    .translate([width / 2, height / 1.5]);
-
+  let projection = d3.geoOrthographic()
+    .scale(250)
+    .translate([width/2, height / 2]);
+  
   // load geography data only once on component mount
   onMount(async () => {
     geography.state = await loadGeographyData();
-    cityGeoData.state = await loadCityLatLngData();
+    circleGeoData.state = await loadCityLatLngData();
     loadCountries(projection);
     loadStartEndDate();
     renderCircles(projection, g.state);
+    registerGlobeEventListeners(projection);
   });
+
+  onDestroy(() => {
+    destroyGlobeEventListeners();
+  })
 
   $effect(() => {
     if (!data) {
@@ -150,14 +156,6 @@
         .selectAll("circle")
         .attr("display", "none");
     }
-  });
-
-  $effect(() => {
-    if (!_selectedCountry.state || !geography.state) return;
-    const countryData = geography.state.features.filter(
-      (f: any) => f.properties.name === _selectedCountry.state,
-    );
-    renderCountryOverlay(500, 300, countryData);
   });
 
   $effect(() => {
@@ -268,7 +266,7 @@
     {/if}
   </div>
 
-  <div class="map-container">
+  <div class="map-container" bind:this={mapContainer.state}>
     {#if countriesLoading.state}
       <Loader />
     {/if}
