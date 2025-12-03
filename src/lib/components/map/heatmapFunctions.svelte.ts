@@ -12,6 +12,7 @@ import {
   heatmapMetric,
   legendData,
   showHeatmap,
+  projection
 } from "./mapStates.svelte";
 import { getMostCommonCategory, normalizeCountryName } from "./utils";
 import type { HeatmapMetric } from "@data-types/metrics";
@@ -72,7 +73,7 @@ export function getHeatmapMetricData(
 let countrySelection: any | null = null;
 let animationFrameId: number | null = null;
 
-export function updateCountries(projection: d3.GeoProjection) {
+export function updateCountries() {
   if (!countrySelection || countrySelection.empty()) {
     console.error("Country selection is not initialized");
     return;
@@ -83,7 +84,7 @@ export function updateCountries(projection: d3.GeoProjection) {
   }
 
   animationFrameId = requestAnimationFrame(() => {
-    const path = d3.geoPath().projection(projection);
+    const path = d3.geoPath().projection(projection.state);
     countrySelection.attr("d", (d: any) => path(d));
     animationFrameId = null;
   });
@@ -97,7 +98,11 @@ export function loadCountries(projection: d3.GeoProjection, loaders: boolean = f
     return;
   }
 
-  if (!geography.state || !geography.state.features || geography.state.features.length === 0) {
+  if (
+    !geography.state ||
+    !geography.state.features ||
+    geography.state.features.length === 0
+  ) {
     console.error("geography state is not empty");
     return;
   }
@@ -130,7 +135,7 @@ export function loadCountries(projection: d3.GeoProjection, loaders: boolean = f
       "data-country",
       (d: any, i: number) => geography.state.features[i].properties.name,
     )
-    .on("click", function (_, d) {
+    .on("click", function (_: any, d: any) {
       const country = d.properties.name;
       selectedCountry.state = selectedCountry.state === country ? "" : country;
     });
@@ -190,38 +195,38 @@ export function updateHeatmap(
       }
     });
 
-          if (showHeatmap.state) {
-        // Add hover interactions for heatmap
-        d3.select(g.state)
-          .selectAll("path")
-          .each(function () {
-            const path = d3.select(this);
-            const countryName = path.attr("data-country");
-            const countryData = heatmapMetrics.state[countryName];
+  if (showHeatmap.state) {
+    // Add hover interactions for heatmap
+    d3.select(g.state)
+      .selectAll("path")
+      .each(function () {
+        const path = d3.select(this);
+        const countryName = path.attr("data-country");
+        const countryData = heatmapMetrics.state[countryName];
 
-            path
-              .on("mouseover", function (event) {
-                path.attr("opacity", 0.7);
-                showTooltip(event, countryName, countryData, heatmapMetric.state);
-              })
-              .on("mouseout", function () {
-                path.attr("opacity", 1);
-                hideTooltip();
-              })
-              .on("mousemove", function (event) {
-                showTooltip(event, countryName, countryData, heatmapMetric.state);
-              });
+        path
+          .on("mouseover", function (event) {
+            path.attr("opacity", 0.7);
+            showTooltip(event, countryName, countryData, heatmapMetric.state);
+          })
+          .on("mouseout", function () {
+            path.attr("opacity", 1);
+            hideTooltip();
+          })
+          .on("mousemove", function (event) {
+            showTooltip(event, countryName, countryData, heatmapMetric.state);
           });
-      } else {
-        // Remove hover interactions
-        d3.select(g.state)
-          .selectAll("path")
-          .on("mouseover", null)
-          .on("mouseout", null)
-          .on("mousemove", null)
-          .attr("opacity", 1);
-        hideTooltip();
-      }
+      });
+  } else {
+    // Remove hover interactions
+    d3.select(g.state)
+      .selectAll("path")
+      .on("mouseover", null)
+      .on("mouseout", null)
+      .on("mousemove", null)
+      .attr("opacity", 1);
+    hideTooltip();
+  }
 }
 
 function setupColorScale(metric: HeatmapMetric, data: Record<string, any>) {

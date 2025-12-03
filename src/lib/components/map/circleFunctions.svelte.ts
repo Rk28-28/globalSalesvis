@@ -13,6 +13,7 @@ import {
   circleMetric,
   circlesRendered,
   showCircles,
+  projection
 } from "./mapStates.svelte";
 import { getScaleRange, normalizeCountryName } from "./utils";
 import type { CircleMetric } from "@data-types/metrics";
@@ -80,44 +81,44 @@ export function updateCircleMetrics(): typeof circleMetrics.state {
   const end = endDate;
 
   for (let i = 0; i < orderData.state.length; i++) {
-      const order = orderData.state[i];
-      const orderDate = new Date(order.orderDate);
+    const order = orderData.state[i];
+    const orderDate = new Date(order.orderDate);
 
-      // Check if order is within date range
-      if ((start && orderDate < start) || (end && orderDate > end)) continue;
+    // Check if order is within date range
+    if ((start && orderDate < start) || (end && orderDate > end)) continue;
 
-      const country = order.country;
-      const city = order.city;
+    const country = order.country;
+    const city = order.city;
 
-      // Initialize if needed
-      if (!out[country]) out[country] = {};
-      if (!metricsOut[country]) metricsOut[country] = {};
-      if (!metricsOut[country][city]) {
-          metricsOut[country][city] = {
-              orders: 0,
-              sales: 0,
-              profit: 0,
-              quantity: 0,
-              shipping: 0,
-              discount: 0,
-              maxDiscount: 0,
-          };
-      }
+    // Initialize if needed
+    if (!out[country]) out[country] = {};
+    if (!metricsOut[country]) metricsOut[country] = {};
+    if (!metricsOut[country][city]) {
+      metricsOut[country][city] = {
+        orders: 0,
+        sales: 0,
+        profit: 0,
+        quantity: 0,
+        shipping: 0,
+        discount: 0,
+        maxDiscount: 0,
+      };
+    }
 
-      // Store a reference to the nested object
-      const cityMetrics = metricsOut[country][city];
+    // Store a reference to the nested object
+    const cityMetrics = metricsOut[country][city];
 
-      // Update counts
-      out[country][city] = (out[country][city] || 0) + 1;
+    // Update counts
+    out[country][city] = (out[country][city] || 0) + 1;
 
-      // Update metric values using the local reference
-      cityMetrics.orders += 1;
-      cityMetrics.sales += order.sales || 0;
-      cityMetrics.profit += order.profit || 0;
-      cityMetrics.quantity += order.quantity || 0;
-      cityMetrics.shipping += order.shippingCost || 0;
-      cityMetrics.discount += order.discount || 0;
-      cityMetrics.maxDiscount = Math.max(cityMetrics.maxDiscount, order.discount || 0);
+    // Update metric values using the local reference
+    cityMetrics.orders += 1;
+    cityMetrics.sales += order.sales || 0;
+    cityMetrics.profit += order.profit || 0;
+    cityMetrics.quantity += order.quantity || 0;
+    cityMetrics.shipping += order.shippingCost || 0;
+    cityMetrics.discount += order.discount || 0;
+    cityMetrics.maxDiscount = Math.max(cityMetrics.maxDiscount, order.discount || 0);
   }
 
   return metricsOut;
@@ -154,16 +155,13 @@ export function updateCircleSize() {
         .attr("fill", fill);
     }
   });
-  
+
   // keep track of all hidden cities not shown
   let hiddenCities = Array.from(allCities.difference(shownCities));
   for (let i = 0; i < hiddenCities.length; i++) {
     const circle = svg.state?.getElementById(hiddenCities[i]);
     if (circle) {
-      d3.select(circle)
-        .transition()
-        .duration(animationDelay.state)
-        .attr("r", 0);
+      d3.select(circle).transition().duration(animationDelay.state).attr("r", 0);
     }
   }
 }
@@ -216,9 +214,35 @@ function formatTooltip(city: string, country: string): string {
   }
 }
 
+function isPointVisible(projection: d3.GeoProjection, lng: number, lat: number): boolean {
+  const [centerLng, centerLat] = projection.rotate().map((d) => -d); // Reverse the rotation
+  const point = [lng, lat];
+
+  // Convert degrees to radians
+  const toRadians = (deg: number) => (deg * Math.PI) / 180;
+
+  const center = [
+    Math.cos(toRadians(centerLat)) * Math.cos(toRadians(centerLng)),
+    Math.cos(toRadians(centerLat)) * Math.sin(toRadians(centerLng)),
+    Math.sin(toRadians(centerLat)),
+  ];
+
+  const target = [
+    Math.cos(toRadians(lat)) * Math.cos(toRadians(lng)),
+    Math.cos(toRadians(lat)) * Math.sin(toRadians(lng)),
+    Math.sin(toRadians(lat)),
+  ];
+
+  // Dot product of the two vectors
+  const dotProduct = center[0] * target[0] + center[1] * target[1] + center[2] * target[2];
+
+  // If the dot product is positive, the point is on the visible side
+  return dotProduct > 0;
+}
+
 // d3.selection
 let circleGroup: d3.Selection<SVGGElement, unknown, null, undefined> | null = null;
-export function updateCircleLocations(projection: d3.GeoProjection) {
+export function updateCircleLocations() {
   if (!circleGroup || circleGroup.empty()) {
     console.error("Circle group is empty, cannot update locations");
     return;
@@ -235,22 +259,23 @@ export function updateCircleLocations(projection: d3.GeoProjection) {
     const city = d.city;
     const country = d.country;
 
-    if (!geoData[country] || !geoData[country][city]) {
+    if (!geoData[country] || !geoData[country][city] || !projection.state) {
       return;
     }
 
     const [lng, lat] = [geoData[country][city].lng, geoData[country][city].lat];
-    const [x, y] = projection([lng, lat]) || [null, null];
+    //@ts-ignore projection state was checked at the top of the function
+    const [x, y] = projection.state([lng, lat]) || [null, null];
 
     if (x !== null && y !== null) {
       // Check if the circle is within the visible bounds
-      if (x < 0 || x > svgWidth || y < 0 || y > svgHeight) {
+      if (!isPointVisible(projection.state, lng, lat)) {
         // Hide the circle if it's out of bounds
         d3.select(this).attr("display", "none");
       } else {
         // Show the circle and update its position
-        d3.select(this)
-          .attr("display", "block")
+        const selection = d3.select(this)
+          .attr("display", showCircles.state ? "block" : "none")
           .attr("cx", x)
           .attr("cy", y);
       }
@@ -259,7 +284,10 @@ export function updateCircleLocations(projection: d3.GeoProjection) {
 }
 
 // renders circles on the map. should only really be used once
-export function renderCircles(projection: d3.GeoProjection, targetG: SVGGElement | null) {
+export function renderCircles(
+  projection: d3.GeoProjection,
+  targetG: SVGGElement | null,
+) {
   if (!orderData.state.length || !targetG || !circleGeoData.state || !radiusScale) {
     return;
   }
@@ -330,7 +358,6 @@ export function renderCircles(projection: d3.GeoProjection, targetG: SVGGElement
   });
   circleData = circleData.filter((d) => d !== null);
 
-
   circleGroup
     .selectAll("circle")
     .data(circleData)
@@ -374,9 +401,7 @@ export function renderCircles(projection: d3.GeoProjection, targetG: SVGGElement
         metric === "profit" && d.metricValue < 0
           ? "rgba(255, 0, 0, 0.6)"
           : "rgba(255, 100, 0, 0.6)";
-      d3.select(this)
-        .attr("fill", normalFill)
-        .attr("r", radiusScale(absValue));
+      d3.select(this).attr("fill", normalFill).attr("r", radiusScale(absValue));
 
       const tt = tooltip.state;
       if (tt) {

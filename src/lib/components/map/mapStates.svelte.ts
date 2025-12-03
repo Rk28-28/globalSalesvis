@@ -18,7 +18,8 @@ let circleGeoData = $state<any>(makeStateWrapper(null));
 let geography = $state<any>(makeStateWrapper(null));
 let countriesLoading = $state<StateWrapper<boolean>>(makeStateWrapper(true));
 let selectedCountry = $state<StateWrapper<string>>(makeStateWrapper(""));
-let mapContainer = $state<StateWrapper<HTMLDivElement|null>>(makeStateWrapper(null));
+let mapContainer = $state<StateWrapper<HTMLDivElement | null>>(makeStateWrapper(null));
+let projection = $state<StateWrapper<d3.GeoProjection | null>>(makeStateWrapper(null));
 
 // circle states
 let circleMetrics = $state<
@@ -91,4 +92,5 @@ export {
   animationPlaying,
   animationDelay,
   mapContainer,
+  projection,
 };

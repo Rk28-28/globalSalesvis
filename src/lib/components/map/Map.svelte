@@ -25,13 +25,15 @@
     heatmapMetric,
     heatmapMetrics,
     legendData,
-    mapContainer
+    mapContainer,
+    projection,
   } from "./mapStates.svelte";
   import {
     updateCircleMetrics,
     renderCircles,
     updateCircleSize,
     updateRadiusScale,
+    updateCircleLocations,
   } from "./circleFunctions.svelte";
   import {
     startAnimation,
@@ -48,7 +50,10 @@
   } from "./heatmapFunctions.svelte";
   import { circleMetricLabels, heatmapMetricLabels } from "@data-types/metrics";
   import "./mapStyles.css";
-  import { destroyGlobeEventListeners, registerGlobeEventListeners } from "./globeFunctions";
+  import {
+    destroyGlobeEventListeners,
+    registerGlobeEventListeners,
+  } from "./globeFunctions";
 
   // make the props as minimal as possible so that other people can easily hook into the map
   type Props = {
@@ -69,23 +74,30 @@
     height = 650,
   }: Props = $props();
 
-  let projection = d3.geoOrthographic()
+  projection.state = d3
+    .geoOrthographic()
     .scale(250)
-    .translate([width/2, height / 2]);
-  
+    .translate([width / 2, height / 2]);
+
   // load geography data only once on component mount
   onMount(async () => {
+    if (!projection.state) {
+      projection.state = d3
+      .geoOrthographic()
+      .scale(250)
+      .translate([width / 2, height / 2]);
+    }
     geography.state = await loadGeographyData();
     circleGeoData.state = await loadCityLatLngData();
-    loadCountries(projection);
+    loadCountries(projection.state);
     loadStartEndDate();
-    renderCircles(projection, g.state);
-    registerGlobeEventListeners(projection);
+    renderCircles(projection.state, g.state);
+    registerGlobeEventListeners();
   });
 
   onDestroy(() => {
     destroyGlobeEventListeners();
-  })
+  });
 
   $effect(() => {
     if (!data) {
@@ -108,8 +120,11 @@
 
   // load circles - only when checkbox is toggled
   $effect(() => {
-    if (showCircles.state) {
-      renderCircles(projection, g.state);
+    if (showCircles.state && projection.state) {
+      console.log('show circles toggled');
+      // renderCircles(projection.state, g.state); //Probably shouldn't be using "renderCircles" here, use lighter function
+      updateCircleLocations();
+      updateCircleSize();
     }
   });
 
@@ -148,13 +163,9 @@
     if (!svg.state) return;
 
     if (showCircles.state) {
-      d3.select(svg.state)
-        .selectAll("circle")
-        .attr("display", "block");
+      d3.select(svg.state).selectAll("circle").attr("display", "block");
     } else {
-      d3.select(svg.state)
-        .selectAll("circle")
-        .attr("display", "none");
+      d3.select(svg.state).selectAll("circle").attr("display", "none");
     }
   });
 
