@@ -78,15 +78,9 @@ export function updateCountryLocations() {
     loadCountries(projection.state);
   }
 
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-  }
-
-  animationFrameId = requestAnimationFrame(() => {
-    const path = d3.geoPath().projection(projection.state);
-    countrySelection.attr("d", (d: any) => path(d));
-    animationFrameId = null;
-  });
+  const path = d3.geoPath().projection(projection.state);
+  countrySelection.attr("d", (d: any) => path(d));
+  animationFrameId = null;
 }
 
 export function loadCountries(projection: d3.GeoProjection, loaders: boolean = false) {

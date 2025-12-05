@@ -122,27 +122,6 @@
     }
   });
 
-  // re-render circles on radius change
-  $effect(() => {
-    if (initialLoading) return;
-
-    if (!circlesRendered.state && projection.state) {
-      logEffect('Re-render circles');
-      // renderCircles(projection.state, g.state, circleGeoData.state);
-    }
-  })
-
-  // load circles - only when checkbox is toggled
-  $effect(() => {
-    if (initialLoading) return;
-
-    if (showCircles.state && projection.state) {
-      logEffect('Show circles');
-
-      updateCircleSize();
-    }
-  });
-
   // updates when scale changes
   $effect(() => {
     if (initialLoading) return;
@@ -177,14 +156,20 @@
     }
   });
 
-  // runs whever projection changes
+  // runs whever projection changes & circle are shown
   $effect(() => {
     if (initialLoading) return;
 
     if (projection.state) {
       logEffect('Projection change: country locations');
       updateCountryLocations();
-      updateCircleLocations();
+      
+      if (showCircles.state) {
+        requestAnimationFrame(() => {
+          updateCircleSize();
+          updateCircleLocations();
+        });
+      }
     }
   })
 

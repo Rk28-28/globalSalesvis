@@ -17,7 +17,7 @@ let onMouseMove: (e: MouseEvent) => void | null;
 
 function debouncedGlobeUpdate(
   e: MouseEvent,
-  delay: number = 50,
+  delay: number = 10,
 ) {
   if (debounceTimeout || !projection.state) {
     return;
@@ -40,14 +40,16 @@ function debouncedGlobeUpdate(
 
   projection.state.rotate(newRotate);
 
-  debounceTimeout = setTimeout(() => {
-    updateCountryLocations();
+  // debounceTimeout = setTimeout(() => {
+    requestAnimationFrame(() => {
+      updateCountryLocations();
 
-    if (showCircles.state) {
-      updateCircleLocations();
-    }
-    debounceTimeout = null;
-  }, delay);
+      if (showCircles.state) {
+        updateCircleLocations();
+      }
+      debounceTimeout = null;
+    })
+  // }, delay);
 }
 
 // registers event listeners for globe updating.
