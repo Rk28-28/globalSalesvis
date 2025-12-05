@@ -73,10 +73,9 @@ export function getHeatmapMetricData(
 let countrySelection: any | null = null;
 let animationFrameId: number | null = null;
 
-export function updateCountries() {
-  if (!countrySelection || countrySelection.empty()) {
-    console.error("Country selection is not initialized");
-    return;
+export function updateCountryLocations() {
+  if ((!countrySelection || countrySelection.empty()) && projection.state) {
+    loadCountries(projection.state);
   }
 
   if (animationFrameId) {
@@ -91,8 +90,6 @@ export function updateCountries() {
 }
 
 export function loadCountries(projection: d3.GeoProjection, loaders: boolean = false) {
-  countriesLoading.state = loaders;
-
   if (!g.state) {
     console.error("g.state is not initialized");
     return;
@@ -103,7 +100,7 @@ export function loadCountries(projection: d3.GeoProjection, loaders: boolean = f
     !geography.state.features ||
     geography.state.features.length === 0
   ) {
-    console.error("geography state is not empty");
+    console.error("geography state is empty");
     return;
   }
 
@@ -139,8 +136,6 @@ export function loadCountries(projection: d3.GeoProjection, loaders: boolean = f
       const country = d.properties.name;
       selectedCountry.state = selectedCountry.state === country ? "" : country;
     });
-
-  countriesLoading.state = false;
 }
 
 // Function to update country metric data based on date range

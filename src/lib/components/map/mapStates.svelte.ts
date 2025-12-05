@@ -3,6 +3,7 @@
 import type { Order } from "@data-types/order";
 import type { CircleMetricData } from "@data-types/circleData";
 import type { HeatmapMetric, CircleMetric } from "@data-types/metrics";
+import type { ProjectionType } from "@data-types/mapState";
 
 export type StateWrapper<T> = { state: T };
 function makeStateWrapper<T>(p: T): StateWrapper<T> {
@@ -20,6 +21,7 @@ let countriesLoading = $state<StateWrapper<boolean>>(makeStateWrapper(true));
 let selectedCountry = $state<StateWrapper<string>>(makeStateWrapper(""));
 let mapContainer = $state<StateWrapper<HTMLDivElement | null>>(makeStateWrapper(null));
 let projection = $state<StateWrapper<d3.GeoProjection | null>>(makeStateWrapper(null));
+let projectionType = $state<StateWrapper<ProjectionType>>(makeStateWrapper('2d'));
 
 // circle states
 let circleMetrics = $state<
@@ -93,4 +95,5 @@ export {
   animationDelay,
   mapContainer,
   projection,
+  projectionType,
 };

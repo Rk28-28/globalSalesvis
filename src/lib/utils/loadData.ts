@@ -100,20 +100,15 @@ export async function loadCityLatLngData(): Promise<any> {
     "Côte d’Ivoire": "Côte-d'Ivoire",
   };
 
-  const list = csv.map(cityGeoFromCSV);
-  const out: any = {};
-
-  list.forEach((c) => {
-    const country = countryNameMap[c.country] || c.country;
-
-    if (!out[country]) {
-      out[country] = {};
-    }
-    out[country][c.city] = {
-      lat: c.lat,
-      lng: c.lng,
+  const out: Record<string, Record<string, { lat: number; lng: number }>> = {};
+  for (const row of csv) {
+    const country = countryNameMap[row.country] || row.country;
+    if (!out[country]) out[country] = {};
+    out[country][row.city] = {
+      lat: Number(row.lat),
+      lng: Number(row.lng),
     };
-  });
+  }
 
   return out;
 }

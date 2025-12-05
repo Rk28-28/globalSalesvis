@@ -1,8 +1,7 @@
 <script lang="ts">
-  import type { Order } from "@data-types/order";
   import * as d3 from "d3";
   import { onMount, onDestroy } from "svelte";
-  import { loadCityLatLngData, loadGeographyData } from "@utils/loadData";
+  import { loadCityLatLngData, loadData, loadGeographyData } from "@utils/loadData";
   import { Loader } from "@components/loader";
   import {
     orderData,
@@ -27,6 +26,8 @@
     legendData,
     mapContainer,
     projection,
+    projectionType,
+    circlesRendered,
   } from "./mapStates.svelte";
   import {
     updateCircleMetrics,
@@ -47,6 +48,7 @@
     getHeatmapMetricData,
     updateHeatmap,
     updateHeatmapMetricDataWithDateFilter,
+    updateCountryLocations,
   } from "./heatmapFunctions.svelte";
   import { circleMetricLabels, heatmapMetricLabels } from "@data-types/metrics";
   import "./mapStyles.css";
@@ -54,29 +56,25 @@
     destroyGlobeEventListeners,
     registerGlobeEventListeners,
   } from "./globeFunctions";
+  import { Toggle } from "@components/toggle";
+  import { logEffect } from "./logger";
 
+  let statusMsg = $state('Loading data');
+  let initialLoading = $state(true);
   // make the props as minimal as possible so that other people can easily hook into the map
   type Props = {
-    loading: boolean;
-    error: Error | null;
-    data: Order[] | null;
-    selectedCountry: string;
     width?: number;
     height?: number;
   };
 
   let {
-    loading,
-    error,
-    selectedCountry = $bindable(_selectedCountry.state),
-    data,
     width = 960,
     height = 650,
   }: Props = $props();
 
-  projection.state = d3
-    .geoOrthographic()
-    .scale(250)
+  projection.state = d3.
+    geoMercator()
+    .scale(150)
     .translate([width / 2, height / 2]);
 
   // load geography data only once on component mount
@@ -87,68 +85,119 @@
       .scale(250)
       .translate([width / 2, height / 2]);
     }
+    countriesLoading.state = true;
+
+    orderData.state = await loadData();
+    statusMsg = "Loading country geography..."
     geography.state = await loadGeographyData();
-    circleGeoData.state = await loadCityLatLngData();
+    statusMsg = "Loading city geography..."
+    const data = await loadCityLatLngData();
+    circleGeoData.state = data;
+    statusMsg = "Finalizing..."
     loadCountries(projection.state);
     loadStartEndDate();
-    renderCircles(projection.state, g.state);
+    circleMetrics.state = updateCircleMetrics();
+    renderCircles(projection.state, g.state, circleGeoData.state); // this is the problem child
     registerGlobeEventListeners();
+    countriesLoading.state = false;
+    initialLoading = false;
   });
 
   onDestroy(() => {
     destroyGlobeEventListeners();
   });
 
-  $effect(() => {
-    if (!data) {
-      return;
-    }
-    orderData.state = data;
-  });
-
   // Update country metric data when date range or metric changes
   $effect(() => {
+    if (initialLoading) return;
+
     if (
       orderData.state &&
       (startDateRaw.state || endDateRaw.state || heatmapMetric.state)
     ) {
       updateHeatmapMetricDataWithDateFilter();
     } else if (orderData.state) {
+      logEffect('Heatmap metrics')
       heatmapMetrics.state = getHeatmapMetricData(orderData.state, heatmapMetric.state);
     }
   });
 
+  // re-render circles on radius change
+  $effect(() => {
+    if (initialLoading) return;
+
+    if (!circlesRendered.state && projection.state) {
+      logEffect('Re-render circles');
+      // renderCircles(projection.state, g.state, circleGeoData.state);
+    }
+  })
+
   // load circles - only when checkbox is toggled
   $effect(() => {
+    if (initialLoading) return;
+
     if (showCircles.state && projection.state) {
-      console.log('show circles toggled');
-      // renderCircles(projection.state, g.state); //Probably shouldn't be using "renderCircles" here, use lighter function
-      updateCircleLocations();
+      logEffect('Show circles');
+
       updateCircleSize();
     }
   });
 
+  // updates when scale changes
   $effect(() => {
+    if (initialLoading) return;
+
+    logEffect('Radius scale');
     updateRadiusScale();
   });
 
   $effect(() => {
+    if (initialLoading) return;
+
+    logEffect('Circle metrics');
     circleMetrics.state = updateCircleMetrics();
   });
 
+  // runs when projectionType changes
   $effect(() => {
-    if (showCircles.state) {
-      updateCircleSize();
+    if (initialLoading) return;
+
+    logEffect(`Projection change: ${projectionType.state}`)
+    if (projectionType.state == '2d') {
+      projection.state = d3.
+        geoMercator()
+        .scale(150)
+        .translate([width / 2, height / 2]);
+    } else {
+      console.log('chaing projection to globe');
+      projection.state = d3
+        .geoOrthographic()
+        .scale(250)
+        .translate([width / 2, height / 2]);
     }
   });
 
+  // runs whever projection changes
+  $effect(() => {
+    if (initialLoading) return;
+
+    if (projection.state) {
+      logEffect('Projection change: country locations');
+      updateCountryLocations();
+      updateCircleLocations();
+    }
+  })
+
   // Handle heatmap toggle and metric changes
   $effect(() => {
+    if (initialLoading) return;
+
     if (
       g.state &&
       heatmapMetrics.state &&
       Object.keys(heatmapMetrics.state).length > 0
     ) {
+      logEffect('Update heatmap')
       updateHeatmap(
         g.state,
         heatmapMetrics.state,
@@ -160,6 +209,7 @@
 
   // toggle circle display
   $effect(() => {
+    if (initialLoading) return;
     if (!svg.state) return;
 
     if (showCircles.state) {
@@ -170,6 +220,8 @@
   });
 
   $effect(() => {
+    if (initialLoading) return;
+
     if (!_selectedCountry.state) {
       d3.select("#country-overlay").selectAll("path").remove();
     }
@@ -276,10 +328,17 @@
       </div>
     {/if}
   </div>
+  <Toggle bind:projectionType={projectionType.state}/>
+  <small>
+    move this later ^
+  </small>
 
   <div class="map-container" bind:this={mapContainer.state}>
     {#if countriesLoading.state}
+    <div class="flex flex-col gap-2 items-center">
       <Loader />
+      {statusMsg}
+    </div>
     {/if}
     <svg
       {width}

@@ -13,7 +13,10 @@ import {
   circleMetric,
   circlesRendered,
   showCircles,
-  projection
+  projection,
+  g,
+  radiusScale,
+  projectionType,
 } from "./mapStates.svelte";
 import { getScaleRange, normalizeCountryName } from "./utils";
 import type { CircleMetric } from "@data-types/metrics";
@@ -23,10 +26,9 @@ let startDate = $derived<Date>(new Date(startDateRaw.state));
 let endDate = $derived<Date>(new Date(endDateRaw.state));
 let currentMetric = $state<CircleMetric>("orders"); // Track current metric
 let lastMetric = "";
-let radiusScale: any | null;
 let allCities = new Set<string>();
 
-export function updateRadiusScale() {
+export async function updateRadiusScale() {
   // don't update if metric has not changed
   if (
     (lastMetric && lastMetric == circleMetric.state) ||
@@ -51,7 +53,7 @@ export function updateRadiusScale() {
   // flip this variable to signal that circles need to be re-rendered on scale change
   circlesRendered.state = false;
 
-  radiusScale = d3.scaleSqrt().domain([0, maxValue]).range(scaleRange);
+  radiusScale.state = d3.scaleSqrt().domain([0, maxValue]).range(scaleRange);
 }
 
 // loops over city buckets and applies callback function with city and country
@@ -126,7 +128,9 @@ export function updateCircleMetrics(): typeof circleMetrics.state {
 
 // updates the size of circles on the map whenever cityFreqs updates
 export function updateCircleSize() {
-  if (!circlesRendered.state || radiusScale == null) {
+  console.log(circlesRendered.state);
+  if (radiusScale.state == null) {
+    console.error("Cannot update circle size: circles are not rendered or radius scale is null!");
     return;
   }
 
@@ -136,11 +140,11 @@ export function updateCircleSize() {
   mapCircleMetrics((country, city, data) => {
     const q = `${city}-${country}`;
     const circle = svg.state?.getElementById(q);
-    if (circle) {
+    if (circle && radiusScale.state) {
       shownCities.add(`${city}-${country}`);
       const value = data[circleMetric.state];
       const radius =
-        metric === "profit" ? radiusScale(Math.abs(value)) : radiusScale(value);
+        metric === "profit" ? radiusScale.state(Math.abs(value)) : radiusScale.state(value);
 
       // For profit, change color based on positive/negative
       const fill =
@@ -244,17 +248,15 @@ function isPointVisible(projection: d3.GeoProjection, lng: number, lat: number):
 let circleGroup: d3.Selection<SVGGElement, unknown, null, undefined> | null = null;
 export function updateCircleLocations() {
   if (!circleGroup || circleGroup.empty()) {
-    console.error("Circle group is empty, cannot update locations");
-    return;
+    circleGroup = d3.select(g.state).append("g").attr("class", "cities");
+
+    if (circleGroup.empty()) {
+      console.error("Circle group is empty!");
+      return;
+    }
   }
 
   const geoData = circleGeoData.state;
-
-  // Define the visible bounds (adjust based on your SVG dimensions)
-  const svgWidth = svg.state?.clientWidth || 800; // Default width
-  const svgHeight = svg.state?.clientHeight || 400; // Default height
-
-  // Update the position of each circle
   circleGroup.selectAll("circle").each(function (d: any) {
     const city = d.city;
     const country = d.country;
@@ -269,12 +271,12 @@ export function updateCircleLocations() {
 
     if (x !== null && y !== null) {
       // Check if the circle is within the visible bounds
-      if (!isPointVisible(projection.state, lng, lat)) {
+      if (!isPointVisible(projection.state, lng, lat) && projectionType.state == 'globe') {
         // Hide the circle if it's out of bounds
         d3.select(this).attr("display", "none");
       } else {
         // Show the circle and update its position
-        const selection = d3.select(this)
+        d3.select(this)
           .attr("display", showCircles.state ? "block" : "none")
           .attr("cx", x)
           .attr("cy", y);
@@ -287,10 +289,15 @@ export function updateCircleLocations() {
 export function renderCircles(
   projection: d3.GeoProjection,
   targetG: SVGGElement | null,
+  geoData: any,
 ) {
-  if (!orderData.state.length || !targetG || !circleGeoData.state || !radiusScale) {
+  if (!orderData.state.length || !targetG || !geoData) {
+    console.log(orderData.state.length);
+    console.log(targetG);
+    console.log(geoData);
     return;
   }
+  console.log(geoData);
 
   const metric = circleMetric.state;
 
@@ -306,6 +313,7 @@ export function renderCircles(
   }
 
   if (circlesRendered.state && selectedCountry.state === "") {
+    console.log('Quick return from renderCircles');
     return;
   }
 
@@ -317,12 +325,13 @@ export function renderCircles(
 
   currentMetric = metric; // Update current metric
 
-  const geoData = circleGeoData.state;
+  // const geoData = circleGeoData.state;
   circleGroup = d3.select(targetG).append("g").attr("class", "cities");
   if (selectedCountry.state === "USA") {
     selectedCountry.state = "United States";
   } // very hacky fix for the naming mismatch between country and selectedCountry.state
 
+  const allValues: number[] = [];
   let circleData: (CircleData & { metricValue: number })[] = [];
   mapCircleMetrics((country, city, data) => {
     if (!geoData[country] || !geoData[country][city]) {
@@ -331,6 +340,7 @@ export function renderCircles(
     if (country !== selectedCountry.state && "" !== selectedCountry.state) {
       return;
     }
+    allValues.push(data[circleMetric.state]);
 
     // initial rendering should be called with all data
     allCities.add(`${city}-${country}`);
@@ -357,6 +367,12 @@ export function renderCircles(
     });
   });
   circleData = circleData.filter((d) => d !== null);
+  const maxValue =
+    circleMetric.state === "profit"
+      ? Math.max(...allValues.map((v) => Math.abs(v)), 1)
+      : Math.max(...allValues, 1);
+  const scaleRange = getScaleRange();
+  radiusScale.state = d3.scaleSqrt().domain([0, maxValue]).range(scaleRange);
 
   circleGroup
     .selectAll("circle")
@@ -366,8 +382,10 @@ export function renderCircles(
     .attr("cx", (d) => d.x)
     .attr("cy", (d) => d.y)
     .attr("r", (d: any) => {
+      if (!radiusScale.state) return 0;
+
       const absValue = metric === "profit" ? Math.abs(d.metricValue) : d.metricValue;
-      return showCircles.state ? radiusScale(absValue) : 0;
+      return showCircles.state ? radiusScale.state(absValue) : 0;
     })
     .attr("fill", (d) =>
       metric === "profit" && d.metricValue < 0
@@ -378,9 +396,11 @@ export function renderCircles(
     .attr("stroke-width", 0.8)
     .style("pointer-events", "all")
     .on("mouseover", function (event, d) {
+      if (!radiusScale.state) return 0;
+
       const absValue = metric === "profit" ? Math.abs(d.metricValue) : d.metricValue;
 
-      const hoveredRadius = radiusScale(absValue) * 1.3;
+      const hoveredRadius = radiusScale.state(absValue) * 1.3;
       const hoverFill =
         metric === "profit" && d.metricValue < 0
           ? "rgba(255, 50, 50, 0.9)"
@@ -401,7 +421,7 @@ export function renderCircles(
         metric === "profit" && d.metricValue < 0
           ? "rgba(255, 0, 0, 0.6)"
           : "rgba(255, 100, 0, 0.6)";
-      d3.select(this).attr("fill", normalFill).attr("r", radiusScale(absValue));
+      d3.select(this).attr("fill", normalFill).attr("r", radiusScale.state ? radiusScale.state(absValue) : 0);
 
       const tt = tooltip.state;
       if (tt) {
@@ -412,7 +432,11 @@ export function renderCircles(
       selectedCountry.state =
         selectedCountry.state === d.normalizedCountry ? "" : d.normalizedCountry;
     });
-  if (selectedCountry.state === "") {
-    circlesRendered.state = true;
-  }
+
+  const circles = circleGroup.selectAll("circle");
+  console.log("Number of circles rendered:", circles.size());
+
+  // if (selectedCountry.state === "") {
+  circlesRendered.state = true;
+  // }
 }
