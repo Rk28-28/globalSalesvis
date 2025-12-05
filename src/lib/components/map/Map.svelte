@@ -3,6 +3,7 @@
   import { onMount, onDestroy } from "svelte";
   import { loadCityLatLngData, loadData, loadGeographyData } from "@utils/loadData";
   import { Loader } from "@components/loader";
+  import CountryComparisonModal from "./countryComparisonPop.svelte";
   import {
     orderData,
     circleGeoData,
@@ -61,6 +62,8 @@
 
   let statusMsg = $state('Loading data');
   let initialLoading = $state(true);
+  let showComparisonModal = $state(false);
+  
   // make the props as minimal as possible so that other people can easily hook into the map
   type Props = {
     width?: number;
@@ -316,10 +319,24 @@
       </div>
     {/if}
   </div>
-  <Toggle bind:projectionType={projectionType.state}/>
-  <small>
-    move this later ^
-  </small>
+  
+  <div class="secondary-controls">
+    <Toggle bind:projectionType={projectionType.state}/>
+    
+    <button 
+      class="comparison-btn"
+      onclick={() => showComparisonModal = true}
+      disabled={!orderData.state}
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="2" y="3" width="7" height="14" stroke="currentColor" stroke-width="2" fill="none" />
+        <rect x="11" y="3" width="7" height="14" stroke="currentColor" stroke-width="2" fill="none" />
+        <path d="M5.5 7 L5.5 13" stroke="currentColor" stroke-width="2" />
+        <path d="M14.5 7 L14.5 13" stroke="currentColor" stroke-width="2" />
+      </svg>
+      Compare Countries
+    </button>
+  </div>
 
   <div class="map-container" bind:this={mapContainer.state}>
     {#if countriesLoading.state}
@@ -466,10 +483,18 @@
       />
     </div>
   </div>
+  
   {#if _selectedCountry.state}
     <div class="country-overlay">
       <button onclick={() => (_selectedCountry.state = "")}>&nbsp;[X]&nbsp;</button>
       <svg id="country-overlay" width="600" height="400"></svg>
     </div>
+  {/if}
+
+  {#if showComparisonModal && orderData.state}
+    <CountryComparisonModal 
+      orders={orderData.state} 
+      onClose={() => showComparisonModal = false}
+    />
   {/if}
 </main>
