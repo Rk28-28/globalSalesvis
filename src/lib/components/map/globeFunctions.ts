@@ -38,6 +38,7 @@ function debouncedGlobeUpdate(
   const rotate = projection.state.rotate();
   const newRotate = [rotate[0] + deltaX * 0.25, rotate[1] - deltaY * 0.25, rotate[2]];
 
+  //@ts-ignore
   projection.state.rotate(newRotate);
 
   debounceTimeout = setTimeout(() => {
