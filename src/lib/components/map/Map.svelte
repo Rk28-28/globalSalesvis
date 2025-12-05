@@ -28,6 +28,7 @@
     projection,
     projectionType,
     circlesRendered,
+    zoomLevel,
   } from "./mapStates.svelte";
   import {
     updateCircleMetrics,
@@ -77,6 +78,24 @@
     .scale(150)
     .translate([width / 2, height / 2]);
 
+  function addZoomListener() {
+    const _svg = svg.state;
+    if (!_svg) {
+      return;
+    }
+
+    d3.select(_svg).call(
+      
+      //@ts-ignore it works
+      d3.zoom()
+      .scaleExtent([1, 15]) // min/max zoom
+      .on("zoom", (event) => {
+        zoomLevel.state = event.transform.k;
+        d3.select(g.state).attr("transform", event.transform);
+      })
+    );
+  }
+
   // load geography data only once on component mount
   onMount(async () => {
     if (!projection.state) {
@@ -95,6 +114,7 @@
     circleGeoData.state = data;
     statusMsg = "Finalizing..."
     loadCountries(projection.state);
+    addZoomListener();
     // loadStartEndDate(); // this could be useful in a world where it's truly dynamic
     circleMetrics.state = updateCircleMetrics();
     renderCircles(projection.state, g.state, circleGeoData.state);
@@ -153,6 +173,24 @@
         .geoOrthographic()
         .scale(250)
         .translate([width / 2, height / 2]);
+    }
+  });
+
+  // update circle sizes on zoom
+  let lastZoomLevel = 1;
+  let zoomDebounceTimeout: any = null;
+  let zoomDebounceDelay = 300;
+  $effect(() => {
+    if (initialLoading) return;
+
+    if (zoomLevel.state != lastZoomLevel) {
+      logEffect('Zoom level');
+      lastZoomLevel = zoomLevel.state;
+
+      if (zoomDebounceTimeout) clearTimeout(zoomDebounceTimeout);
+      zoomDebounceTimeout = setTimeout(() => {
+        updateCircleSize();
+      }, zoomDebounceDelay);
     }
   });
 

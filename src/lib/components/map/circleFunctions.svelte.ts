@@ -17,6 +17,7 @@ import {
   g,
   radiusScale,
   projectionType,
+  zoomLevel,
 } from "./mapStates.svelte";
 import { getScaleRange, normalizeCountryName } from "./utils";
 import type { CircleMetric } from "@data-types/metrics";
@@ -28,6 +29,26 @@ let currentMetric = $state<CircleMetric>("orders"); // Track current metric
 let lastMetric = "";
 let allCities = new Set<string>();
 
+// d3.selection
+let circleGroup: d3.Selection<SVGGElement, unknown, null, undefined> | null = null;
+
+// loops over city metrics and applies callback function with city and country
+// use for loops instead of forEach beucase of the performance gains
+function mapCircleMetrics(
+  fn: (country: string, city: string, cm: CircleMetricData) => void,
+) {
+  const state = circleMetrics.state;
+  const circleMetricEntries = Object.entries(circleMetrics.state);
+  for (let i = 0; i < circleMetricEntries.length; i++) {
+    let [country, cities] = circleMetricEntries[i];
+    let cityKeys = Object.keys(cities || {});
+    for (let j = 0; j < cityKeys.length; j++) {
+      fn(country, cityKeys[j], state[country][cityKeys[j]]);
+    }
+  }
+}
+
+// update the scale. should be triggered on metric changes
 export async function updateRadiusScale() {
   // don't update if metric has not changed
   if (
@@ -56,21 +77,6 @@ export async function updateRadiusScale() {
   radiusScale.state = d3.scaleSqrt().domain([0, maxValue]).range(scaleRange);
 }
 
-// loops over city buckets and applies callback function with city and country
-// use for loops instead of forEach beucase of the performance gains
-function mapCircleMetrics(
-  fn: (country: string, city: string, cm: CircleMetricData) => void,
-) {
-  const state = circleMetrics.state;
-  const circleMetricEntries = Object.entries(circleMetrics.state);
-  for (let i = 0; i < circleMetricEntries.length; i++) {
-    let [country, cities] = circleMetricEntries[i];
-    let cityKeys = Object.keys(cities || {});
-    for (let j = 0; j < cityKeys.length; j++) {
-      fn(country, cityKeys[j], state[country][cityKeys[j]]);
-    }
-  }
-}
 
 // batch updates city buckets variable
 // should realistically only need to happen once
@@ -132,41 +138,72 @@ export function updateCircleSize() {
     console.error("Cannot update circle size: circles are not rendered or radius scale is null!");
     return;
   }
+  if (!circleGroup || circleGroup.empty()) {
+    circleGroup = d3.select(g.state).append("g").attr("class", "cities");
 
-  const metric = circleMetric.state;
-
-  let shownCities = new Set<string>();
-  mapCircleMetrics((country, city, data) => {
-    const q = `${city}-${country}`;
-    const circle = svg.state?.getElementById(q);
-    if (circle && radiusScale.state) {
-      shownCities.add(`${city}-${country}`);
-      const value = data[circleMetric.state];
-      const radius =
-        metric === "profit" ? radiusScale.state(Math.abs(value)) : radiusScale.state(value);
-
-      // For profit, change color based on positive/negative
-      const fill =
-        metric === "profit" && value < 0
-          ? "rgba(255, 0, 0, 0.6)" // Red for negative profit
-          : "rgba(255, 100, 0, 0.6)"; // Orange for positive/other metrics
-
-      d3.select(circle)
-        .transition()
-        .duration(animationDelay.state)
-        .attr("r", radius)
-        .attr("fill", fill);
-    }
-  });
-
-  // keep track of all hidden cities not shown
-  let hiddenCities = Array.from(allCities.difference(shownCities));
-  for (let i = 0; i < hiddenCities.length; i++) {
-    const circle = svg.state?.getElementById(hiddenCities[i]);
-    if (circle) {
-      d3.select(circle).transition().duration(animationDelay.state).attr("r", 0);
+    if (circleGroup.empty()) {
+      console.error("Circle group is empty!");
+      return;
     }
   }
+
+  // const metric = circleMetric.state;
+
+  // let shownCities = new Set<string>();
+  // mapCircleMetrics((country, city, data) => {
+  //   const q = `${city}-${country}`;
+  //   const circle = svg.state?.getElementById(q);
+  //   if (circle && radiusScale.state) {
+  //     shownCities.add(`${city}-${country}`);
+  //     const value = data[circleMetric.state];
+  //     const radius =
+  //       metric === "profit" ? radiusScale.state(Math.abs(value)) : radiusScale.state(value);
+
+  //     // For profit, change color based on positive/negative
+  //     const fill =
+  //       metric === "profit" && value < 0
+  //         ? "rgba(255, 0, 0, 0.6)" // Red for negative profit
+  //         : "rgba(255, 100, 0, 0.6)"; // Orange for positive/other metrics
+
+  //     d3.select(circle)
+  //       .transition()
+  //       .duration(animationDelay.state)
+  //       .attr("r", radius / zoomLevel.state)
+  //       .attr("fill", fill);
+  //   }
+  // });
+
+  // // keep track of all hidden cities not shown
+  // let hiddenCities = Array.from(allCities.difference(shownCities));
+  // for (let i = 0; i < hiddenCities.length; i++) {
+  //   const circle = svg.state?.getElementById(hiddenCities[i]);
+  //   if (circle) {
+  //     d3.select(circle).transition().duration(animationDelay.state).attr("r", 0);
+  //   }
+  // }
+  const metric = circleMetric.state;
+
+  circleGroup.selectAll("circle").each(function (d: any) {
+    const country = d.country;
+    const city = d.city;
+    const data = circleMetrics.state[country]?.[city];
+    if (!data || !radiusScale.state) return;
+
+    const value = data[metric];
+    const radius =
+      metric === "profit" ? radiusScale.state(Math.abs(value)) : radiusScale.state(value);
+
+    const fill =
+      metric === "profit" && value < 0
+        ? "rgba(255, 0, 0, 0.6)"
+        : "rgba(255, 100, 0, 0.6)";
+
+    d3.select(this)
+      .transition()
+      .duration(250)
+      .attr("r", radius / zoomLevel.state)
+      .attr("stroke-width", 0.8 / zoomLevel.state);
+  });
 }
 
 // Format metric value for display in tooltip
@@ -243,8 +280,6 @@ function isPointVisible(projection: d3.GeoProjection, lng: number, lat: number):
   return dotProduct > 0;
 }
 
-// d3.selection
-let circleGroup: d3.Selection<SVGGElement, unknown, null, undefined> | null = null;
 export function updateCircleLocations() {
   if (!circleGroup || circleGroup.empty()) {
     circleGroup = d3.select(g.state).append("g").attr("class", "cities");
@@ -397,9 +432,7 @@ export function renderCircles(
     .on("mouseover", function (event, d) {
       if (!radiusScale.state) return 0;
 
-      const absValue = metric === "profit" ? Math.abs(d.metricValue) : d.metricValue;
-
-      const hoveredRadius = radiusScale.state(absValue) * 1.3;
+      const hoveredRadius = radiusScale.state(Math.abs(d.metricValue)) * 1.3 / zoomLevel.state;
       const hoverFill =
         metric === "profit" && d.metricValue < 0
           ? "rgba(255, 50, 50, 0.9)"
@@ -420,7 +453,7 @@ export function renderCircles(
         metric === "profit" && d.metricValue < 0
           ? "rgba(255, 0, 0, 0.6)"
           : "rgba(255, 100, 0, 0.6)";
-      d3.select(this).attr("fill", normalFill).attr("r", radiusScale.state ? radiusScale.state(absValue) : 0);
+      d3.select(this).attr("fill", normalFill).attr("r", radiusScale.state ? radiusScale.state(absValue) / zoomLevel.state : 0);
 
       const tt = tooltip.state;
       if (tt) {

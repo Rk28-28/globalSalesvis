@@ -67,6 +67,9 @@ let animationPlaying = $state<StateWrapper<AnimationState>>(
 );
 let animationDelay = $state<StateWrapper<number>>(makeStateWrapper(100));
 
+// zoom
+let zoomLevel = $state<StateWrapper<number>>(makeStateWrapper(1));
+
 export {
   circlesRendered,
   orderData,
@@ -96,4 +99,5 @@ export {
   mapContainer,
   projection,
   projectionType,
+  zoomLevel,
 };
