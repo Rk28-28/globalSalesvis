@@ -1,7 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background-primary: #474747;
-  --background-secondary: #555555;
-  --background-light: #7d7d7d;
+  --background-primary: #000000;
+  --background-secondary: #1a1a1a;
+  --background-light: #2a2a2a;
+}
+
+/* Force black background on root elements */
+body {
+  background-color: #000000;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: #000000;
+}
+
+#app {
+  background-color: #000000;
+  min-height: 100vh;
 }

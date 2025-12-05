@@ -250,14 +250,16 @@
           <span class="label-text">Circle Map</span>
         </label>
 
-        {#if showCircles.state}
-          <select bind:value={circleMetric.state} class="metric-select">
-            {#each Object.entries(circleMetricLabels) as [value, label]}
-              <option {value}>{label}</option>
-            {/each}
-          </select>
-          <span class="selected-metric">{circleMetricLabels[circleMetric.state]}</span>
-        {/if}
+        <select 
+          bind:value={circleMetric.state} 
+          class="metric-select"
+          disabled={!showCircles.state}
+        >
+          {#each Object.entries(circleMetricLabels) as [value, label]}
+            <option {value}>{label}</option>
+          {/each}
+        </select>
+        <span class="selected-metric">{circleMetricLabels[circleMetric.state]}</span>
       </div>
 
       <div class="control-item">
@@ -289,20 +291,21 @@
           <span class="label-text">Heatmap</span>
         </label>
 
-        {#if showHeatmap.state}
-          <select bind:value={heatmapMetric.state} class="metric-select">
-            {#each Object.entries(heatmapMetricLabels) as [value, label]}
-              <option {value}>{label}</option>
-            {/each}
-          </select>
-          <span class="selected-metric">{heatmapMetricLabels[heatmapMetric.state]}</span
-          >
-        {/if}
+        <select 
+          bind:value={heatmapMetric.state} 
+          class="metric-select"
+          disabled={!showHeatmap.state}
+        >
+          {#each Object.entries(heatmapMetricLabels) as [value, label]}
+            <option {value}>{label}</option>
+          {/each}
+        </select>
+        <span class="selected-metric">{heatmapMetricLabels[heatmapMetric.state]}</span>
       </div>
     </div>
 
-    {#if showHeatmap.state && legendData.state}
-      <div class="legend">
+    {#if legendData.state}
+      <div class="legend" class:hidden={!showHeatmap.state}>
         <span class="legend-label">{heatmapMetricLabels[heatmapMetric.state]}:</span>
         <div class="legend-content">
           {#if legendData.state.type === "gradient" && legendData.state.gradient}
