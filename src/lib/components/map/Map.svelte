@@ -95,9 +95,9 @@
     circleGeoData.state = data;
     statusMsg = "Finalizing..."
     loadCountries(projection.state);
-    loadStartEndDate();
+    // loadStartEndDate(); // this could be useful in a world where it's truly dynamic
     circleMetrics.state = updateCircleMetrics();
-    renderCircles(projection.state, g.state, circleGeoData.state); // this is the problem child
+    renderCircles(projection.state, g.state, circleGeoData.state);
     registerGlobeEventListeners();
     countriesLoading.state = false;
     initialLoading = false;
