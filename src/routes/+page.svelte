@@ -4,21 +4,6 @@
   import { onMount } from "svelte";
   import type { Order } from "@data-types/order";
   import { asset } from "$app/paths";
-
-  let data = $state<Order[] | null>(null);
-  let error = $state<Error | null>(null);
-  let loading = $state(true);
-  let selectedCountry = $state("");
-
-  onMount(async () => {
-    try {
-      data = await loadData();
-    } catch (e: unknown) {
-      error = e instanceof Error ? e : null;
-    } finally {
-      loading = false;
-    }
-  });
 </script>
 
 <svelte:head>
@@ -28,7 +13,7 @@
 <main>
   <!-- would be nice if the selected country bind worked, maybe figure this out later -->
   <!-- not necessary though -->
-  <Map {loading} {data} {error} bind:selectedCountry />
+  <Map />
 </main>
 
 <style>

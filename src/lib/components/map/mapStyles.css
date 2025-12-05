@@ -60,22 +60,10 @@
     transition: color 0.2s;
   }
 
-  .checkbox-label input[type="checkbox"]:checked ~ svg {
-    color: #4a90e2;
-  }
-
   .label-text {
     font-weight: 600;
     font-size: 0.95rem;
     color: #333;
-  }
-
-  .checkbox-label:hover .label-text {
-    color: #4a90e2;
-  }
-
-  .checkbox-label input[type="checkbox"]:checked ~ .label-text {
-    color: #4a90e2;
   }
 
   .metric-select {

@@ -1,6 +1,6 @@
 import { updateCircleLocations } from "./circleFunctions.svelte";
-import { updateCountries } from "./heatmapFunctions.svelte";
-import { mapContainer, g, showCircles, projection } from "./mapStates.svelte";
+import { updateCountryLocations } from "./heatmapFunctions.svelte";
+import { mapContainer, g, showCircles, projection, projectionType } from "./mapStates.svelte";
 
 let [currentX, currentY]: number[] = [0, 0];
 let mouseDown = false;
@@ -41,10 +41,9 @@ function debouncedGlobeUpdate(
   projection.state.rotate(newRotate);
 
   debounceTimeout = setTimeout(() => {
-    updateCountries();
+    updateCountryLocations();
 
     if (showCircles.state) {
-      console.log("showing circles");
       updateCircleLocations();
     }
     debounceTimeout = null;
@@ -54,7 +53,7 @@ function debouncedGlobeUpdate(
 // registers event listeners for globe updating.
 export function registerGlobeEventListeners() {
   onMouseMove = (e: MouseEvent) => {
-    if (!mouseDown) {
+    if (!mouseDown || projectionType.state == "2d") {
       return;
     }
     debouncedGlobeUpdate(e);
