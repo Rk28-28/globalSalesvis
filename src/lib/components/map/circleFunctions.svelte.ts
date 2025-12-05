@@ -128,7 +128,6 @@ export function updateCircleMetrics(): typeof circleMetrics.state {
 
 // updates the size of circles on the map whenever cityFreqs updates
 export function updateCircleSize() {
-  console.log(circlesRendered.state);
   if (radiusScale.state == null) {
     console.error("Cannot update circle size: circles are not rendered or radius scale is null!");
     return;
@@ -255,7 +254,7 @@ export function updateCircleLocations() {
       return;
     }
   }
-
+  
   const geoData = circleGeoData.state;
   circleGroup.selectAll("circle").each(function (d: any) {
     const city = d.city;
@@ -271,7 +270,7 @@ export function updateCircleLocations() {
 
     if (x !== null && y !== null) {
       // Check if the circle is within the visible bounds
-      if (!isPointVisible(projection.state, lng, lat) && projectionType.state == 'globe') {
+      if (projectionType.state == 'globe' && !isPointVisible(projection.state, lng, lat)) {
         // Hide the circle if it's out of bounds
         d3.select(this).attr("display", "none");
       } else {

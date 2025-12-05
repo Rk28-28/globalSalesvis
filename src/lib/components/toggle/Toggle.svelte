@@ -1,9 +1,15 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+
   let { checked = false, projectionType = $bindable('2d') } = $props();
   function handleChange(event: Event) {
-    checked = (event.target as HTMLInputElement).checked;
     projectionType = projectionType == '2d' ? 'globe' : '2d';
+    checked = projectionType == 'globe';
   }
+
+  onMount(() => {
+    checked = projectionType == 'globe';
+  })
 </script>
 
 <label class="toggle">
