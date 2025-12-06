@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background-primary: #000000;
-  --background-secondary: #1a1a1a;
+  --background-primary: #141414;
+  --background-secondary: #0c0c0c;
   --background-light: #2a2a2a;
 }
 
 /* Force black background on root elements */
 body {
-  background-color: #000000;
+  background-color: var(--background-primary);
   color: #ffffff;
   margin: 0;
   padding: 0;
 }
 
 html {
-  background-color: #000000;
+  background-color: var(--background-primary);
 }
 
 #app {
-  background-color: #000000;
+  background-color: var(--background-primary);
   min-height: 100vh;
 }

@@ -44,7 +44,6 @@
     stopAnimation,
     handleDelayChange,
   } from "./animation.svelte";
-  import { loadStartEndDate } from "./utils";
   import {
     loadCountries,
     getHeatmapMetricData,
@@ -72,8 +71,8 @@
   };
 
   let {
-    width = 960,
-    height = 650,
+    width = 1000,
+    height = 700,
   }: Props = $props();
 
   projection.state = d3.
@@ -406,11 +405,11 @@
 
   <div class="date-controls">
     <div class="control-group">
-      <label for="start-date">Start date</label>
+      <label for="start-date" class="label-text">Start date</label>
       <input type="date" id="start-date" bind:value={startDateRaw.state} />
     </div>
     <div class="control-group">
-      <label for="end-date">End date</label>
+      <label for="end-date" class="label-text">End date</label>
       <input
         type="date"
         id="end-date"
