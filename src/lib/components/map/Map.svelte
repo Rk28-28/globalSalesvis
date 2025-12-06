@@ -89,6 +89,12 @@
       //@ts-ignore it works
       d3.zoom()
       .scaleExtent([1, 15]) // min/max zoom
+      .filter((event) => {
+        if (projectionType.state === "globe") {
+          return event.type === "wheel"; // only allow zooming in globe mode, we have custom panning
+        }
+        return true;
+      })
       .on("zoom", (event) => {
         zoomLevel.state = event.transform.k;
         d3.select(g.state).attr("transform", event.transform);
@@ -142,12 +148,17 @@
     }
   });
 
+  let oldMetric = circleMetric.state;
   // updates when scale changes
   $effect(() => {
     if (initialLoading) return;
 
-    logEffect('Radius scale');
-    updateRadiusScale();
+    if (oldMetric != circleMetric.state) {
+      logEffect('Scale change');
+      // updateRadiusScale();
+      renderCircles(projection.state, g.state, circleGeoData.state);
+      oldMetric = circleMetric.state;
+    }
   });
 
   $effect(() => {
