@@ -18,12 +18,18 @@
     width: 1000px;
   }
 
-  .controls-header {
+  .header {
     display: flex;
     flex-direction: row;
-    align-items: center;
     gap: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .controls-header {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 2rem;
   }
 
   .map-controls {
@@ -123,6 +129,8 @@
     box-shadow: var(--shadow);
     border: var(--border);
     transition: background-color 0.2s ease-in-out;
+
+    max-width: calc(1000px - 764px - 2rem);
   }
 
   .legend-label {

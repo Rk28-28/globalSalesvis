@@ -31,6 +31,25 @@
   cursor: pointer;
   gap: 1em;
   user-select: none;
+
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #333333;
+border-radius: 8px;          font-size: 1rem;
+    font-weight: 600;
+      transition: all 0.2s;
+      background: var(--background-input);
+      color: #ffffff;
+
+      &:focus {
+        outline: none;
+        border-color: #4a90e2;
+        background-color: var(--background-input-hover);
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+      }
+
+      &:hover {
+        background-color: var(--background-input-hover);
+      }
 }
 
 .toggle-input {
