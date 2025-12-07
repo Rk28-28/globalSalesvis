@@ -33,8 +33,8 @@
     background-color: var(--background-secondary);
     border-radius: 10px;
     padding: 1rem 1.5rem;
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-    border: 1px solid #333333;
+    box-shadow: var(--shadow);
+    border: var(--border);
     flex-shrink: 0;
   }
 
@@ -76,7 +76,7 @@
     border-radius: 6px;
     font-size: 0.875rem;
     cursor: pointer;
-    background: #1a1a1a;
+    background: var(--background-input);
     color: #ffffff;
     font-weight: 500;
     transition: all 0.2s;
@@ -88,20 +88,20 @@
 
       &:hover {
         border: 2px solid #333333;
-        background: #1a1a1a;
+        background: var(--background-input);
       }
     }
   }
 
   .metric-select:hover {
     border-color: #4a90e2;
-    background: #2a2a2a;
+    background-color: var(--background-input-hover);
   }
 
   .metric-select:focus {
     outline: none;
     border-color: #4a90e2;
-    background: #2a2a2a;
+    background-color: var(--background-input-hover);
     box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
   }
 
@@ -118,10 +118,10 @@
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
     box-sizing: border-box;
-    background-color: var(--background-secondary);
+    background-color: var(--background-primary);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-    border: 1px solid #333333;
+    box-shadow: var(--shadow);
+    border: var(--border);
     transition: background-color 0.2s ease-in-out;
   }
 
@@ -142,30 +142,12 @@
 
   /* Black out the legend when heatmap is unchecked, but keep the space */
   .legend.hidden {
-    background-color: #000;
-    color: transparent;
-    pointer-events: none;
-  }
-
-  .legend.hidden * {
-    color: transparent !important;
-    background-color: #000 !important;
-    border-color: #000 !important;
-  }
-
-  /* Black out gradient specifically */
-  .legend.hidden .legend-gradient {
-    background: #000 !important;
-  }
-
-  /* Black out categorical color boxes */
-  .legend.hidden .legend-color {
-    background-color: #000 !important;
+    opacity: 0;
   }
 
   /* Smooth transitions */
   .legend * {
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, opacity 0.2s ease;
   }
 
   /* Ensure gradient has fixed dimensions */
@@ -223,7 +205,8 @@
     place-items: center;
     margin-bottom: 2rem;
     border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow);
+    border: var(--border);
     background-color: var(--background-secondary);
     height: 700px;
     width: 1000px;
@@ -241,9 +224,9 @@
     background-color: var(--background-secondary);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow);
     flex-wrap: wrap;
-    border: 1px solid #333333;
+    border: var(--border);
   }
 
   .control-group {
@@ -269,18 +252,18 @@
       border-radius: 6px;
       font-size: 0.9rem;
       transition: all 0.2s;
-      background: #1a1a1a;
+      background: var(--background-input);
       color: #ffffff;
 
       &:focus {
         outline: none;
         border-color: #4a90e2;
-        background: #2a2a2a;
+        background-color: var(--background-input-hover);
         box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
       }
 
       &:hover {
-        background: #2a2a2a;
+        background-color: var(--background-input-hover);
       }
     }
 
@@ -288,13 +271,13 @@
       padding: 0.6rem 0.9rem;
       border: 2px solid #333333;
       border-radius: 6px;
-      background: #1a1a1a;
+      background: var(--background-input);
       color: #ffffff;
       font-size: 0.9rem;
       transition: all 0.2s;
 
       &:hover {
-        background: #2a2a2a;
+        background-color: var(--background-input-hover);
         border-color: #4a90e2;
       }
 
@@ -317,8 +300,8 @@
     pointer-events: none;
     z-index: 1000;
     line-height: 1.5;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-    border: 1px solid #333333;
+    box-shadow: var(--shadow);
+    border: var(--border);
   }
 
   .country-overlay {
@@ -328,23 +311,23 @@
     width: 600px;
     height: 400px;
     background-color: var(--background-secondary);
-    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow);
     z-index: 100;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    border: 1px solid #333333;
+    border: var(--border);
 
     button {
-      background: #1a1a1a;
+      background: var(--background-input);
       color: #ffffff;
-      border: 1px solid #333333;
+      border: var(--border);
       padding: 0.5rem 1rem;
       margin: 0.5rem;
       border-radius: 4px;
 
       &:hover {
-        background: #2a2a2a;
+        background-color: var(--background-input-hover);
       }
     }
   }
@@ -371,7 +354,6 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background: #4a90e2;
     color: white;
     border: none;
     border-radius: 8px;
@@ -379,13 +361,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
-  }
+    background-color: var(--background-input);
+    border: var(--border);
 
-  .comparison-btn:hover:not(:disabled) {
-    background: #357abd;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+    &:hover {
+      background-color: var(--background-input-hover);
+    }
   }
 
   .comparison-btn:disabled {

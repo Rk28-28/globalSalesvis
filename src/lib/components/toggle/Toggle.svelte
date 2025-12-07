@@ -43,7 +43,8 @@
 .toggle-slider {
   width: 40px;
   height: 20px;
-  background: #ccc;
+  background: transparent;
+  border: 1px solid white;
   border-radius: 20px;
   position: relative;
   transition: background 0.2s;
@@ -52,7 +53,7 @@
   content: "";
   position: absolute;
   left: 2px;
-  top: 2px;
+  top: 1px;
   width: 16px;
   height: 16px;
   background: #a5a5a5;
@@ -61,6 +62,6 @@
   transition: transform 0.2s;
 }
 .toggle-input:checked + .toggle-slider::before {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 </style>
