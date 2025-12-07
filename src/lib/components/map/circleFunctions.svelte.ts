@@ -50,11 +50,11 @@ function mapCircleMetrics(
 
 // update the scale. should be triggered on metric changes
 export async function updateRadiusScale() {
-  console.log('last metric: ' + lastMetric);
-  console.log('this metric: ' + circleMetric.state);
+  console.log("last metric: " + lastMetric);
+  console.log("this metric: " + circleMetric.state);
   // don't update if metric has not changed
   if (lastMetric && lastMetric == circleMetric.state) {
-    console.log('Metric didn\'t change, not updating radius scale');
+    console.log("Metric didn't change, not updating radius scale");
     return;
   }
   lastMetric = circleMetric.state;
@@ -73,7 +73,6 @@ export async function updateRadiusScale() {
 
   radiusScale.state = d3.scaleSqrt().domain([0, maxValue]).range(scaleRange);
 }
-
 
 // batch updates city buckets variable
 // should realistically only need to happen once
@@ -132,7 +131,9 @@ export function updateCircleMetrics(): typeof circleMetrics.state {
 // updates the size of circles on the map whenever cityFreqs updates
 export function updateCircleSize() {
   if (radiusScale.state == null) {
-    console.error("Cannot update circle size: circles are not rendered or radius scale is null!");
+    console.error(
+      "Cannot update circle size: circles are not rendered or radius scale is null!",
+    );
     return;
   }
   if (!circleGroup || circleGroup.empty()) {
@@ -154,7 +155,9 @@ export function updateCircleSize() {
 
     const value = data[metric];
     const radius =
-      metric === "profit" ? radiusScale.state(Math.abs(value)) : radiusScale.state(value);
+      metric === "profit"
+        ? radiusScale.state(Math.abs(value))
+        : radiusScale.state(value);
 
     const fill =
       metric === "profit" && value < 0
@@ -217,7 +220,11 @@ function formatTooltip(city: string, country: string): string {
   }
 }
 
-function isPointVisible(projection: d3.GeoProjection, lng: number, lat: number): boolean {
+function isPointVisible(
+  projection: d3.GeoProjection,
+  lng: number,
+  lat: number,
+): boolean {
   const [centerLng, centerLat] = projection.rotate().map((d) => -d); // Reverse the rotation
 
   // Convert degrees to radians
@@ -236,7 +243,8 @@ function isPointVisible(projection: d3.GeoProjection, lng: number, lat: number):
   ];
 
   // Dot product of the two vectors
-  const dotProduct = center[0] * target[0] + center[1] * target[1] + center[2] * target[2];
+  const dotProduct =
+    center[0] * target[0] + center[1] * target[1] + center[2] * target[2];
 
   // If the dot product is positive, the point is on the visible side
   return dotProduct > 0;
@@ -251,7 +259,7 @@ export function updateCircleLocations() {
       return;
     }
   }
-  
+
   const geoData = circleGeoData.state;
   circleGroup.selectAll("circle").each(function (d: any) {
     const city = d.city;
@@ -267,7 +275,10 @@ export function updateCircleLocations() {
 
     if (x !== null && y !== null) {
       // Check if the circle is within the visible bounds
-      if (projectionType.state == 'globe' && !isPointVisible(projection.state, lng, lat)) {
+      if (
+        projectionType.state == "globe" &&
+        !isPointVisible(projection.state, lng, lat)
+      ) {
         // Hide the circle if it's out of bounds
         d3.select(this).attr("display", "none");
       } else {
@@ -295,14 +306,12 @@ export function renderCircles(
   const metric = circleMetric.state;
 
   // If metric changed, force recreation of circles
-  if (
-    metric !== currentMetric && circleGroup
-  ) {
+  if (metric !== currentMetric && circleGroup) {
     console.log("Metric changed, removing old circles");
     circleGroup.remove();
     circlesRendered.state = false;
   } else if (circlesRendered.state) {
-    console.log('Circles already rendered and metric has not changed');
+    console.log("Circles already rendered and metric has not changed");
     return;
   }
 
@@ -392,7 +401,9 @@ export function renderCircles(
         metric === "profit" && d.metricValue < 0
           ? "rgba(255, 50, 50, 0.9)"
           : "rgba(255, 150, 0, 0.9)";
-      d3.select(this).attr("fill", hoverFill).attr("r", hoveredRadius / zoomLevel.state);
+      d3.select(this)
+        .attr("fill", hoverFill)
+        .attr("r", hoveredRadius / zoomLevel.state);
 
       const tt = tooltip.state;
       if (tt) {
@@ -408,7 +419,12 @@ export function renderCircles(
         metric === "profit" && d.metricValue < 0
           ? "rgba(255, 0, 0, 0.6)"
           : "rgba(255, 100, 0, 0.6)";
-      d3.select(this).attr("fill", normalFill).attr("r", radiusScale.state ? radiusScale.state(absValue) / zoomLevel.state : 0);
+      d3.select(this)
+        .attr("fill", normalFill)
+        .attr(
+          "r",
+          radiusScale.state ? radiusScale.state(absValue) / zoomLevel.state : 0,
+        );
 
       const tt = tooltip.state;
       if (tt) {

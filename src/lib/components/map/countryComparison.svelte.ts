@@ -26,24 +26,24 @@ export interface ComparisonSummary {
 
 function formatCurrency(value: number): string {
   const absValue = Math.abs(value);
-  const formatted = absValue.toLocaleString('en-US', {
+  const formatted = absValue.toLocaleString("en-US", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   });
   return value < 0 ? `-$${formatted}` : `$${formatted}`;
 }
 
 function formatNumber(value: number): string {
-  return Math.round(value).toLocaleString('en-US');
+  return Math.round(value).toLocaleString("en-US");
 }
 
 // Calculate statistics for a single country
 export function calculateCountryStats(
   orders: Order[],
-  countryName: string
+  countryName: string,
 ): CountryStats | null {
   const countryOrders = orders.filter(
-    (order) => normalizeCountryName(order.country) === countryName
+    (order) => normalizeCountryName(order.country) === countryName,
   );
 
   if (countryOrders.length === 0) return null;
@@ -62,7 +62,8 @@ export function calculateCountryStats(
     shipModeCounts[order.shipMode] = (shipModeCounts[order.shipMode] || 0) + 1;
     segmentCounts[order.segment] = (segmentCounts[order.segment] || 0) + 1;
     categoryCounts[order.category] = (categoryCounts[order.category] || 0) + 1;
-    priorityCounts[order.orderPriority] = (priorityCounts[order.orderPriority] || 0) + 1;
+    priorityCounts[order.orderPriority] =
+      (priorityCounts[order.orderPriority] || 0) + 1;
   });
 
   return {
@@ -111,7 +112,7 @@ export function calculateGlobalStats(orders: Order[]): CountryStats {
 export function generateComparisonSummary(
   stats1: CountryStats,
   stats2: CountryStats,
-  globalAvg: CountryStats
+  globalAvg: CountryStats,
 ): string[] {
   const sentences: string[] = [];
 
@@ -120,7 +121,7 @@ export function generateComparisonSummary(
     sentences.push(
       `${stats1.country} has ${Math.abs(orderDiff).toFixed(0)}% ${
         orderDiff > 0 ? "more" : "fewer"
-      } orders than ${stats2.country} (${formatNumber(stats1.orders)} vs ${formatNumber(stats2.orders)}).`
+      } orders than ${stats2.country} (${formatNumber(stats1.orders)} vs ${formatNumber(stats2.orders)}).`,
     );
   }
 
@@ -129,17 +130,16 @@ export function generateComparisonSummary(
     sentences.push(
       `${stats1.country}'s average order value is ${Math.abs(salesDiff).toFixed(0)}% ${
         salesDiff > 0 ? "higher" : "lower"
-      } than ${stats2.country} (${formatCurrency(stats1.avgSales)} vs ${formatCurrency(stats2.avgSales)}).`
+      } than ${stats2.country} (${formatCurrency(stats1.avgSales)} vs ${formatCurrency(stats2.avgSales)}).`,
     );
   }
-
 
   const profitDiff = ((stats1.avgProfit - stats2.avgProfit) / stats2.avgProfit) * 100;
   if (Math.abs(profitDiff) > 20) {
     sentences.push(
       `${stats1.country} generates ${Math.abs(profitDiff).toFixed(0)}% ${
         profitDiff > 0 ? "more" : "less"
-      } profit per order compared to ${stats2.country}.`
+      } profit per order compared to ${stats2.country}.`,
     );
   }
 
@@ -149,7 +149,7 @@ export function generateComparisonSummary(
     sentences.push(
       `Shipping costs in ${stats1.country} are ${Math.abs(shippingDiff).toFixed(0)}% ${
         shippingDiff > 0 ? "higher" : "lower"
-      } than ${stats2.country} (${formatCurrency(stats1.avgShippingCost)} vs ${formatCurrency(stats2.avgShippingCost)}).`
+      } than ${stats2.country} (${formatCurrency(stats1.avgShippingCost)} vs ${formatCurrency(stats2.avgShippingCost)}).`,
     );
   }
 
@@ -158,35 +158,36 @@ export function generateComparisonSummary(
     sentences.push(
       `${stats1.country} offers ${Math.abs(discountDiff).toFixed(1)}% ${
         discountDiff > 0 ? "higher" : "lower"
-      } average discounts than ${stats2.country}.`
+      } average discounts than ${stats2.country}.`,
     );
   }
 
-  const salesVsGlobal = ((stats1.avgSales - globalAvg.avgSales) / globalAvg.avgSales) * 100;
+  const salesVsGlobal =
+    ((stats1.avgSales - globalAvg.avgSales) / globalAvg.avgSales) * 100;
   if (Math.abs(salesVsGlobal) > 20) {
     sentences.push(
       `Compared to the global average, ${stats1.country} has ${Math.abs(salesVsGlobal).toFixed(0)}% ${
         salesVsGlobal > 0 ? "higher" : "lower"
-      } average sales per order.`
+      } average sales per order.`,
     );
   }
 
   if (stats1.topCategory !== stats2.topCategory) {
     sentences.push(
-      `${stats1.country} primarily orders ${stats1.topCategory}, while ${stats2.country} prefers ${stats2.topCategory}.`
+      `${stats1.country} primarily orders ${stats1.topCategory}, while ${stats2.country} prefers ${stats2.topCategory}.`,
     );
   }
 
   if (stats1.topShipMode !== stats2.topShipMode) {
     sentences.push(
-      `The most common shipping method in ${stats1.country} is ${stats1.topShipMode}, compared to ${stats2.topShipMode} in ${stats2.country}.`
+      `The most common shipping method in ${stats1.country} is ${stats1.topShipMode}, compared to ${stats2.topShipMode} in ${stats2.country}.`,
     );
   }
 
   // fallback sentence
   if (sentences.length === 0) {
     sentences.push(
-      `${stats1.country} and ${stats2.country} have relatively similar performance metrics across most categories.`
+      `${stats1.country} and ${stats2.country} have relatively similar performance metrics across most categories.`,
     );
   }
 
@@ -196,10 +197,10 @@ export function generateComparisonSummary(
 function normalizeCountryName(country: string): string {
   const mapping: Record<string, string> = {
     "United States": "United States of America",
-    "USA": "United States of America",
-    "US": "United States of America",
+    USA: "United States of America",
+    US: "United States of America",
     "United Kingdom": "United Kingdom",
-    "UK": "United Kingdom",
+    UK: "United Kingdom",
   };
   return mapping[country] || country;
 }

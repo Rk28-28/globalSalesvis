@@ -43,9 +43,9 @@
 
   function formatCurrency(value: number): string {
     const absValue = Math.abs(value);
-    const formatted = absValue.toLocaleString('en-US', {
+    const formatted = absValue.toLocaleString("en-US", {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
     return value < 0 ? `-$${formatted}` : `$${formatted}`;
   }
@@ -55,7 +55,7 @@
   }
 
   function formatNumber(value: number): string {
-    return Math.round(value).toLocaleString('en-US');
+    return Math.round(value).toLocaleString("en-US");
   }
 </script>
 
@@ -125,14 +125,20 @@
                 <td>{formatNumber(stats1.orders)}</td>
                 <td>{formatNumber(stats2.orders)}</td>
                 <td class={stats1.orders > stats2.orders ? "positive" : "negative"}>
-                  {stats1.orders - stats2.orders > 0 ? "+" : ""}{formatNumber(stats1.orders - stats2.orders)}
+                  {stats1.orders - stats2.orders > 0 ? "+" : ""}{formatNumber(
+                    stats1.orders - stats2.orders,
+                  )}
                 </td>
               </tr>
               <tr>
                 <td>Total Sales</td>
                 <td>{formatCurrency(stats1.totalSales)}</td>
                 <td>{formatCurrency(stats2.totalSales)}</td>
-                <td class={stats1.totalSales > stats2.totalSales ? "positive" : "negative"}>
+                <td
+                  class={stats1.totalSales > stats2.totalSales
+                    ? "positive"
+                    : "negative"}
+                >
                   {formatCurrency(stats1.totalSales - stats2.totalSales)}
                 </td>
               </tr>
@@ -148,7 +154,11 @@
                 <td>Total Profit</td>
                 <td>{formatCurrency(stats1.totalProfit)}</td>
                 <td>{formatCurrency(stats2.totalProfit)}</td>
-                <td class={stats1.totalProfit > stats2.totalProfit ? "positive" : "negative"}>
+                <td
+                  class={stats1.totalProfit > stats2.totalProfit
+                    ? "positive"
+                    : "negative"}
+                >
                   {formatCurrency(stats1.totalProfit - stats2.totalProfit)}
                 </td>
               </tr>
@@ -156,7 +166,9 @@
                 <td>Avg Profit per Order</td>
                 <td>{formatCurrency(stats1.avgProfit)}</td>
                 <td>{formatCurrency(stats2.avgProfit)}</td>
-                <td class={stats1.avgProfit > stats2.avgProfit ? "positive" : "negative"}>
+                <td
+                  class={stats1.avgProfit > stats2.avgProfit ? "positive" : "negative"}
+                >
                   {formatCurrency(stats1.avgProfit - stats2.avgProfit)}
                 </td>
               </tr>
@@ -164,7 +176,11 @@
                 <td>Avg Discount</td>
                 <td>{formatPercent(stats1.avgDiscount)}</td>
                 <td>{formatPercent(stats2.avgDiscount)}</td>
-                <td class={stats1.avgDiscount < stats2.avgDiscount ? "positive" : "negative"}>
+                <td
+                  class={stats1.avgDiscount < stats2.avgDiscount
+                    ? "positive"
+                    : "negative"}
+                >
                   {formatPercent(stats1.avgDiscount - stats2.avgDiscount)}
                 </td>
               </tr>
@@ -172,7 +188,11 @@
                 <td>Avg Shipping Cost</td>
                 <td>{formatCurrency(stats1.avgShippingCost)}</td>
                 <td>{formatCurrency(stats2.avgShippingCost)}</td>
-                <td class={stats1.avgShippingCost < stats2.avgShippingCost ? "positive" : "negative"}>
+                <td
+                  class={stats1.avgShippingCost < stats2.avgShippingCost
+                    ? "positive"
+                    : "negative"}
+                >
                   {formatCurrency(stats1.avgShippingCost - stats2.avgShippingCost)}
                 </td>
               </tr>
@@ -180,8 +200,14 @@
                 <td>Total Quantity</td>
                 <td>{formatNumber(stats1.totalQuantity)}</td>
                 <td>{formatNumber(stats2.totalQuantity)}</td>
-                <td class={stats1.totalQuantity > stats2.totalQuantity ? "positive" : "negative"}>
-                  {stats1.totalQuantity - stats2.totalQuantity > 0 ? "+" : ""}{formatNumber(stats1.totalQuantity - stats2.totalQuantity)}
+                <td
+                  class={stats1.totalQuantity > stats2.totalQuantity
+                    ? "positive"
+                    : "negative"}
+                >
+                  {stats1.totalQuantity - stats2.totalQuantity > 0
+                    ? "+"
+                    : ""}{formatNumber(stats1.totalQuantity - stats2.totalQuantity)}
                 </td>
               </tr>
               <tr>

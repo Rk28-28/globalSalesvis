@@ -4,7 +4,7 @@ const LOG_EFFECTS = true;
 //
 // These can be toggled off by the user, by disabling the LOG_EFFECTS variable
 export function logEffect(text: string) {
-    if (LOG_EFFECTS) {
-        console.log(`[EFFECT]: ${text}`);
-    }
+  if (LOG_EFFECTS) {
+    console.log(`[EFFECT]: ${text}`);
+  }
 }

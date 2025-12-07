@@ -60,23 +60,20 @@
   import { Toggle } from "@components/toggle";
   import { logEffect } from "./logger";
 
-  let statusMsg = $state('Loading data');
+  let statusMsg = $state("Loading data");
   let initialLoading = $state(true);
   let showComparisonModal = $state(false);
-  
+
   // make the props as minimal as possible so that other people can easily hook into the map
   type Props = {
     width?: number;
     height?: number;
   };
 
-  let {
-    width = 1000,
-    height = 700,
-  }: Props = $props();
+  let { width = 1000, height = 700 }: Props = $props();
 
-  projection.state = d3.
-    geoMercator()
+  projection.state = d3
+    .geoMercator()
     .scale(150)
     .translate([width / 2, height / 2]);
 
@@ -87,20 +84,20 @@
     }
 
     d3.select(_svg).call(
-      
       //@ts-ignore it works
-      d3.zoom()
-      .scaleExtent([1, 15]) // min/max zoom
-      .filter((event) => {
-        if (projectionType.state === "globe") {
-          return event.type === "wheel"; // only allow zooming in globe mode, we have custom panning
-        }
-        return true;
-      })
-      .on("zoom", (event) => {
-        zoomLevel.state = event.transform.k;
-        d3.select(g.state).attr("transform", event.transform);
-      })
+      d3
+        .zoom()
+        .scaleExtent([1, 15]) // min/max zoom
+        .filter((event) => {
+          if (projectionType.state === "globe") {
+            return event.type === "wheel"; // only allow zooming in globe mode, we have custom panning
+          }
+          return true;
+        })
+        .on("zoom", (event) => {
+          zoomLevel.state = event.transform.k;
+          d3.select(g.state).attr("transform", event.transform);
+        }),
     );
   }
 
@@ -108,19 +105,19 @@
   onMount(async () => {
     if (!projection.state) {
       projection.state = d3
-      .geoOrthographic()
-      .scale(250)
-      .translate([width / 2, height / 2]);
+        .geoOrthographic()
+        .scale(250)
+        .translate([width / 2, height / 2]);
     }
     countriesLoading.state = true;
 
     orderData.state = await loadData();
-    statusMsg = "Loading country geography..."
+    statusMsg = "Loading country geography...";
     geography.state = await loadGeographyData();
-    statusMsg = "Loading city geography..."
+    statusMsg = "Loading city geography...";
     const data = await loadCityLatLngData();
     circleGeoData.state = data;
-    statusMsg = "Finalizing..."
+    statusMsg = "Finalizing...";
     loadCountries(projection.state);
     addZoomListener();
     // loadStartEndDate(); // this could be useful in a world where it's truly dynamic
@@ -145,7 +142,7 @@
     ) {
       updateHeatmapMetricDataWithDateFilter();
     } else if (orderData.state) {
-      logEffect('Heatmap metrics')
+      logEffect("Heatmap metrics");
       heatmapMetrics.state = getHeatmapMetricData(orderData.state, heatmapMetric.state);
     }
   });
@@ -156,7 +153,7 @@
     if (initialLoading) return;
 
     if (oldMetric != circleMetric.state) {
-      logEffect('Scale change');
+      logEffect("Scale change");
       // updateRadiusScale();
       renderCircles(projection.state, g.state, circleGeoData.state);
       oldMetric = circleMetric.state;
@@ -166,7 +163,7 @@
   $effect(() => {
     if (initialLoading) return;
 
-    logEffect('Circle metrics');
+    logEffect("Circle metrics");
     circleMetrics.state = updateCircleMetrics();
   });
 
@@ -174,14 +171,14 @@
   $effect(() => {
     if (initialLoading) return;
 
-    logEffect(`Projection change: ${projectionType.state}`)
-    if (projectionType.state == '2d') {
-      projection.state = d3.
-        geoMercator()
+    logEffect(`Projection change: ${projectionType.state}`);
+    if (projectionType.state == "2d") {
+      projection.state = d3
+        .geoMercator()
         .scale(150)
         .translate([width / 2, height / 2]);
     } else {
-      console.log('chaing projection to globe');
+      console.log("chaing projection to globe");
       projection.state = d3
         .geoOrthographic()
         .scale(250)
@@ -197,7 +194,7 @@
     if (initialLoading) return;
 
     if (zoomLevel.state != lastZoomLevel) {
-      logEffect('Zoom level');
+      logEffect("Zoom level");
       lastZoomLevel = zoomLevel.state;
 
       if (zoomDebounceTimeout) clearTimeout(zoomDebounceTimeout);
@@ -212,9 +209,9 @@
     if (initialLoading) return;
 
     if (projection.state) {
-      logEffect('Projection change: country locations');
+      logEffect("Projection change: country locations");
       updateCountryLocations();
-      
+
       if (showCircles.state) {
         requestAnimationFrame(() => {
           updateCircleSize();
@@ -222,7 +219,7 @@
         });
       }
     }
-  })
+  });
 
   // Handle heatmap toggle and metric changes
   $effect(() => {
@@ -233,7 +230,7 @@
       heatmapMetrics.state &&
       Object.keys(heatmapMetrics.state).length > 0
     ) {
-      logEffect('Update heatmap')
+      logEffect("Update heatmap");
       updateHeatmap(
         g.state,
         heatmapMetrics.state,
@@ -286,9 +283,9 @@
             </svg>
             <span class="label-text">Circle Map</span>
           </label>
-  
-          <select 
-            bind:value={circleMetric.state} 
+
+          <select
+            bind:value={circleMetric.state}
             class="metric-select"
             disabled={!showCircles.state}
           >
@@ -298,7 +295,7 @@
           </select>
           <span class="selected-metric">{circleMetricLabels[circleMetric.state]}</span>
         </div>
-  
+
         <div class="control-item">
           <label class="checkbox-label">
             <input type="checkbox" bind:checked={showHeatmap.state} />
@@ -313,9 +310,30 @@
                 stroke-width="2"
                 fill="none"
               />
-              <rect x="5" y="5" width="4" height="4" fill="currentColor" opacity="0.3" />
-              <rect x="11" y="5" width="4" height="4" fill="currentColor" opacity="0.6" />
-              <rect x="5" y="11" width="4" height="4" fill="currentColor" opacity="0.6" />
+              <rect
+                x="5"
+                y="5"
+                width="4"
+                height="4"
+                fill="currentColor"
+                opacity="0.3"
+              />
+              <rect
+                x="11"
+                y="5"
+                width="4"
+                height="4"
+                fill="currentColor"
+                opacity="0.6"
+              />
+              <rect
+                x="5"
+                y="11"
+                width="4"
+                height="4"
+                fill="currentColor"
+                opacity="0.6"
+              />
               <rect
                 x="11"
                 y="11"
@@ -327,9 +345,9 @@
             </svg>
             <span class="label-text">Heatmap</span>
           </label>
-  
-          <select 
-            bind:value={heatmapMetric.state} 
+
+          <select
+            bind:value={heatmapMetric.state}
             class="metric-select"
             disabled={!showHeatmap.state}
           >
@@ -337,29 +355,46 @@
               <option {value}>{label}</option>
             {/each}
           </select>
-          <span class="selected-metric">{heatmapMetricLabels[heatmapMetric.state]}</span>
+          <span class="selected-metric">{heatmapMetricLabels[heatmapMetric.state]}</span
+          >
         </div>
       </div>
-  
-      <div class="secondary-controls"> 
-          <button 
+
+      <div class="secondary-controls">
+        <button
           class="comparison-btn"
-          onclick={() => showComparisonModal = true}
+          onclick={() => (showComparisonModal = true)}
           disabled={!orderData.state}
-          >
+        >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <rect x="2" y="3" width="7" height="14" stroke="currentColor" stroke-width="2" fill="none" />
-            <rect x="11" y="3" width="7" height="14" stroke="currentColor" stroke-width="2" fill="none" />
+            <rect
+              x="2"
+              y="3"
+              width="7"
+              height="14"
+              stroke="currentColor"
+              stroke-width="2"
+              fill="none"
+            />
+            <rect
+              x="11"
+              y="3"
+              width="7"
+              height="14"
+              stroke="currentColor"
+              stroke-width="2"
+              fill="none"
+            />
             <path d="M5.5 7 L5.5 13" stroke="currentColor" stroke-width="2" />
             <path d="M14.5 7 L14.5 13" stroke="currentColor" stroke-width="2" />
           </svg>
           Compare Countries
         </button>
-        
-        <Toggle bind:projectionType={projectionType.state}/>
+
+        <Toggle bind:projectionType={projectionType.state} />
       </div>
     </div>
-    
+
     {#if legendData.state}
       <div class="legend" class:hidden={!showHeatmap.state}>
         <span class="legend-label">{heatmapMetricLabels[heatmapMetric.state]}:</span>
@@ -390,10 +425,10 @@
 
   <div class="map-container" bind:this={mapContainer.state}>
     {#if countriesLoading.state}
-    <div class="flex flex-col gap-2 items-center">
-      <Loader />
-      {statusMsg}
-    </div>
+      <div class="flex flex-col gap-2 items-center">
+        <Loader />
+        {statusMsg}
+      </div>
     {/if}
     <svg
       {width}
@@ -533,7 +568,7 @@
       />
     </div>
   </div>
-  
+
   {#if _selectedCountry.state}
     <div class="country-overlay">
       <button onclick={() => (_selectedCountry.state = "")}>&nbsp;[X]&nbsp;</button>
@@ -542,9 +577,9 @@
   {/if}
 
   {#if showComparisonModal && orderData.state}
-    <CountryComparisonModal 
-      orders={orderData.state} 
-      onClose={() => showComparisonModal = false}
+    <CountryComparisonModal
+      orders={orderData.state}
+      onClose={() => (showComparisonModal = false)}
     />
   {/if}
 </main>

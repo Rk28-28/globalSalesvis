@@ -21,7 +21,7 @@ let countriesLoading = $state<StateWrapper<boolean>>(makeStateWrapper(true));
 let selectedCountry = $state<StateWrapper<string>>(makeStateWrapper(""));
 let mapContainer = $state<StateWrapper<HTMLDivElement | null>>(makeStateWrapper(null));
 let projection = $state<StateWrapper<d3.GeoProjection | null>>(makeStateWrapper(null));
-let projectionType = $state<StateWrapper<ProjectionType>>(makeStateWrapper('2d'));
+let projectionType = $state<StateWrapper<ProjectionType>>(makeStateWrapper("2d"));
 
 // circle states
 let circleMetrics = $state<
@@ -48,8 +48,16 @@ let startDateRaw = $state<StateWrapper<string>>(makeStateWrapper(""));
 let endDateRaw = $state<StateWrapper<string>>(makeStateWrapper(""));
 
 // singletons
-let dataStartDate = $state<StateWrapper<Date>>(makeStateWrapper(new Date('Wed Jan 01 2014 00:00:00 GMT-0600 (Central Standard Time)')));
-let dataEndDate = $state<StateWrapper<Date>>(makeStateWrapper(new Date('Sun Dec 31 2017 00:00:00 GMT-0600 (Central Standard Time)')));
+let dataStartDate = $state<StateWrapper<Date>>(
+  makeStateWrapper(
+    new Date("Wed Jan 01 2014 00:00:00 GMT-0600 (Central Standard Time)"),
+  ),
+);
+let dataEndDate = $state<StateWrapper<Date>>(
+  makeStateWrapper(
+    new Date("Sun Dec 31 2017 00:00:00 GMT-0600 (Central Standard Time)"),
+  ),
+);
 
 // map elements
 let svg = $state<StateWrapper<SVGSVGElement | null>>(makeStateWrapper(null));

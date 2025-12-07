@@ -155,7 +155,10 @@
 
   /* Smooth transitions */
   .legend * {
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, opacity 0.2s ease;
+    transition:
+      color 0.2s ease-in-out,
+      background-color 0.2s ease-in-out,
+      opacity 0.2s ease;
   }
 
   /* Ensure gradient has fixed dimensions */

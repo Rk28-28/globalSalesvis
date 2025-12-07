@@ -12,7 +12,7 @@ import {
   heatmapMetric,
   legendData,
   showHeatmap,
-  projection
+  projection,
 } from "./mapStates.svelte";
 import { getMostCommonCategory, normalizeCountryName } from "./utils";
 import type { HeatmapMetric } from "@data-types/metrics";

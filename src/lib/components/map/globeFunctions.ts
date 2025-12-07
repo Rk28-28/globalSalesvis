@@ -1,6 +1,12 @@
 import { updateCircleLocations } from "./circleFunctions.svelte";
 import { updateCountryLocations } from "./heatmapFunctions.svelte";
-import { mapContainer, g, showCircles, projection, projectionType } from "./mapStates.svelte";
+import {
+  mapContainer,
+  g,
+  showCircles,
+  projection,
+  projectionType,
+} from "./mapStates.svelte";
 
 let [currentX, currentY]: number[] = [0, 0];
 let mouseDown = false;
@@ -15,10 +21,7 @@ let onMouseUp = () => {
 };
 let onMouseMove: (e: MouseEvent) => void | null;
 
-function debouncedGlobeUpdate(
-  e: MouseEvent,
-  delay: number = 10,
-) {
+function debouncedGlobeUpdate(e: MouseEvent, delay: number = 10) {
   if (debounceTimeout || !projection.state) {
     return;
   }
@@ -41,14 +44,14 @@ function debouncedGlobeUpdate(
   projection.state.rotate(newRotate);
 
   // debounceTimeout = setTimeout(() => {
-    requestAnimationFrame(() => {
-      updateCountryLocations();
+  requestAnimationFrame(() => {
+    updateCountryLocations();
 
-      if (showCircles.state) {
-        updateCircleLocations();
-      }
-      debounceTimeout = null;
-    })
+    if (showCircles.state) {
+      updateCircleLocations();
+    }
+    debounceTimeout = null;
+  });
   // }, delay);
 }
 
