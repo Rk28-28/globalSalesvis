@@ -44,7 +44,6 @@
     stopAnimation,
     handleDelayChange,
   } from "./animation.svelte";
-  import { loadStartEndDate } from "./utils";
   import {
     loadCountries,
     getHeatmapMetricData,
@@ -72,8 +71,8 @@
   };
 
   let {
-    width = 960,
-    height = 650,
+    width = 1000,
+    height = 700,
   }: Props = $props();
 
   projection.state = d3.
@@ -268,79 +267,99 @@
 <main class="map-component">
   <div class="tooltip" bind:this={tooltip.state}></div>
 
-  <div class="controls-header">
-    <div class="map-controls">
-      <div class="control-item">
-        <label class="checkbox-label">
-          <input type="checkbox" bind:checked={showCircles.state} />
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle
-              cx="10"
-              cy="10"
-              r="7"
-              stroke="currentColor"
-              stroke-width="2"
-              fill="none"
-            />
-            <circle cx="10" cy="10" r="3" fill="currentColor" />
-          </svg>
-          <span class="label-text">Circle Map</span>
-        </label>
-
-        <select 
-          bind:value={circleMetric.state} 
-          class="metric-select"
-          disabled={!showCircles.state}
-        >
-          {#each Object.entries(circleMetricLabels) as [value, label]}
-            <option {value}>{label}</option>
-          {/each}
-        </select>
-        <span class="selected-metric">{circleMetricLabels[circleMetric.state]}</span>
+  <div class="header">
+    <div class="controls-header">
+      <div class="map-controls">
+        <div class="control-item">
+          <label class="checkbox-label">
+            <input type="checkbox" bind:checked={showCircles.state} />
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle
+                cx="10"
+                cy="10"
+                r="7"
+                stroke="currentColor"
+                stroke-width="2"
+                fill="none"
+              />
+              <circle cx="10" cy="10" r="3" fill="currentColor" />
+            </svg>
+            <span class="label-text">Circle Map</span>
+          </label>
+  
+          <select 
+            bind:value={circleMetric.state} 
+            class="metric-select"
+            disabled={!showCircles.state}
+          >
+            {#each Object.entries(circleMetricLabels) as [value, label]}
+              <option {value}>{label}</option>
+            {/each}
+          </select>
+          <span class="selected-metric">{circleMetricLabels[circleMetric.state]}</span>
+        </div>
+  
+        <div class="control-item">
+          <label class="checkbox-label">
+            <input type="checkbox" bind:checked={showHeatmap.state} />
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect
+                x="2"
+                y="2"
+                width="16"
+                height="16"
+                rx="2"
+                stroke="currentColor"
+                stroke-width="2"
+                fill="none"
+              />
+              <rect x="5" y="5" width="4" height="4" fill="currentColor" opacity="0.3" />
+              <rect x="11" y="5" width="4" height="4" fill="currentColor" opacity="0.6" />
+              <rect x="5" y="11" width="4" height="4" fill="currentColor" opacity="0.6" />
+              <rect
+                x="11"
+                y="11"
+                width="4"
+                height="4"
+                fill="currentColor"
+                opacity="0.9"
+              />
+            </svg>
+            <span class="label-text">Heatmap</span>
+          </label>
+  
+          <select 
+            bind:value={heatmapMetric.state} 
+            class="metric-select"
+            disabled={!showHeatmap.state}
+          >
+            {#each Object.entries(heatmapMetricLabels) as [value, label]}
+              <option {value}>{label}</option>
+            {/each}
+          </select>
+          <span class="selected-metric">{heatmapMetricLabels[heatmapMetric.state]}</span>
+        </div>
       </div>
-
-      <div class="control-item">
-        <label class="checkbox-label">
-          <input type="checkbox" bind:checked={showHeatmap.state} />
+  
+      <div class="secondary-controls"> 
+          <button 
+          class="comparison-btn"
+          onclick={() => showComparisonModal = true}
+          disabled={!orderData.state}
+          >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <rect
-              x="2"
-              y="2"
-              width="16"
-              height="16"
-              rx="2"
-              stroke="currentColor"
-              stroke-width="2"
-              fill="none"
-            />
-            <rect x="5" y="5" width="4" height="4" fill="currentColor" opacity="0.3" />
-            <rect x="11" y="5" width="4" height="4" fill="currentColor" opacity="0.6" />
-            <rect x="5" y="11" width="4" height="4" fill="currentColor" opacity="0.6" />
-            <rect
-              x="11"
-              y="11"
-              width="4"
-              height="4"
-              fill="currentColor"
-              opacity="0.9"
-            />
+            <rect x="2" y="3" width="7" height="14" stroke="currentColor" stroke-width="2" fill="none" />
+            <rect x="11" y="3" width="7" height="14" stroke="currentColor" stroke-width="2" fill="none" />
+            <path d="M5.5 7 L5.5 13" stroke="currentColor" stroke-width="2" />
+            <path d="M14.5 7 L14.5 13" stroke="currentColor" stroke-width="2" />
           </svg>
-          <span class="label-text">Heatmap</span>
-        </label>
-
-        <select 
-          bind:value={heatmapMetric.state} 
-          class="metric-select"
-          disabled={!showHeatmap.state}
-        >
-          {#each Object.entries(heatmapMetricLabels) as [value, label]}
-            <option {value}>{label}</option>
-          {/each}
-        </select>
-        <span class="selected-metric">{heatmapMetricLabels[heatmapMetric.state]}</span>
+          Compare Countries
+        </button>
+        
+        <Toggle bind:projectionType={projectionType.state}/>
       </div>
     </div>
-
+    
     {#if legendData.state}
       <div class="legend" class:hidden={!showHeatmap.state}>
         <span class="legend-label">{heatmapMetricLabels[heatmapMetric.state]}:</span>
@@ -368,24 +387,6 @@
       </div>
     {/if}
   </div>
-  
-  <div class="secondary-controls">
-    <Toggle bind:projectionType={projectionType.state}/>
-    
-    <button 
-      class="comparison-btn"
-      onclick={() => showComparisonModal = true}
-      disabled={!orderData.state}
-    >
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <rect x="2" y="3" width="7" height="14" stroke="currentColor" stroke-width="2" fill="none" />
-        <rect x="11" y="3" width="7" height="14" stroke="currentColor" stroke-width="2" fill="none" />
-        <path d="M5.5 7 L5.5 13" stroke="currentColor" stroke-width="2" />
-        <path d="M14.5 7 L14.5 13" stroke="currentColor" stroke-width="2" />
-      </svg>
-      Compare Countries
-    </button>
-  </div>
 
   <div class="map-container" bind:this={mapContainer.state}>
     {#if countriesLoading.state}
@@ -406,11 +407,11 @@
 
   <div class="date-controls">
     <div class="control-group">
-      <label for="start-date">Start date</label>
+      <label for="start-date" class="label-text">Start date</label>
       <input type="date" id="start-date" bind:value={startDateRaw.state} />
     </div>
     <div class="control-group">
-      <label for="end-date">End date</label>
+      <label for="end-date" class="label-text">End date</label>
       <input
         type="date"
         id="end-date"

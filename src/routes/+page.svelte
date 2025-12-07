@@ -1,8 +1,5 @@
 <script lang="ts">
   import { Map } from "@components/map";
-  import { loadData } from "@utils/loadData";
-  import { onMount } from "svelte";
-  import type { Order } from "@data-types/order";
   import { asset } from "$app/paths";
 </script>
 
