@@ -286,8 +286,6 @@
     if (!_selectedCountry.state || !geography.state.features || !miniSvg.state) return;
     renderMiniHexmap(_selectedCountry.state, circleMetric.state, miniSvg.state);
   });
-
-  $inspect(startDateRaw.state);
 </script>
 
 <main class="map-component">
