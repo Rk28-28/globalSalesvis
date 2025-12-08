@@ -336,9 +336,9 @@ export function renderCircles(
     if (!geoData[country] || !geoData[country][city]) {
       return;
     }
-    if (country !== selectedCountry.state && "" !== selectedCountry.state) {
-      return;
-    }
+    // if (country !== selectedCountry.state && "" !== selectedCountry.state) {
+    //   return;
+    // }
     allValues.push(data[circleMetric.state]);
 
     // initial rendering should be called with all data

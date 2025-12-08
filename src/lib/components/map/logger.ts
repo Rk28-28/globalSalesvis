@@ -1,4 +1,4 @@
-const LOG_EFFECTS = true;
+const LOG_EFFECTS = false;
 
 // Log an "Effect" block running.
 //
