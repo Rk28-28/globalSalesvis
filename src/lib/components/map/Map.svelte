@@ -167,6 +167,21 @@
     circleMetrics.state = updateCircleMetrics();
   });
 
+  let oldStartDate = startDateRaw.state;
+  let oldEndDate = endDateRaw.state;
+  // should be running on animation, add date guards so it doesn't run on zoom
+  $effect(() => {
+    if (initialLoading) return;
+
+    if (oldStartDate != startDateRaw.state && oldEndDate != endDateRaw.state) {
+      logEffect('Circle size');
+      updateCircleSize();
+
+      oldStartDate = startDateRaw.state;
+      oldEndDate = endDateRaw.state;
+    }
+  });
+
   // runs when projectionType changes
   $effect(() => {
     if (initialLoading) return;
@@ -259,6 +274,8 @@
       d3.select("#country-overlay").selectAll("path").remove();
     }
   });
+
+  $inspect(startDateRaw.state);
 </script>
 
 <main class="map-component">
@@ -568,6 +585,7 @@
       />
     </div>
   </div>
+  <br/>
 
   {#if _selectedCountry.state}
     <div class="country-overlay">
