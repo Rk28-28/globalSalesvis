@@ -70,10 +70,10 @@
     height?: number;
   };
 
-  let { width = 1000, height = 700 }: Props = $props();
+  let { width = 1000, height = 600 }: Props = $props();
 
   projection.state = d3
-    .geoMercator()
+    .geoEquirectangular()
     .scale(150)
     .translate([width / 2, height / 2]);
 
@@ -189,7 +189,7 @@
     logEffect(`Projection change: ${projectionType.state}`);
     if (projectionType.state == "2d") {
       projection.state = d3
-        .geoMercator()
+        .geoEquirectangular()
         .scale(150)
         .translate([width / 2, height / 2]);
     } else {
