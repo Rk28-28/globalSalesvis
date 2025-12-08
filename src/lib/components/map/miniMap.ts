@@ -15,6 +15,7 @@ let scale = 1;
 
 export function renderMiniHexmap(selectedCountryName: string, metric: CircleMetric, miniSvg: SVGSVGElement) {
   if (!geography.state?.features) return;
+  scale = 1
 
   const svg = d3.select(miniSvg);
   svg.selectAll("*").remove();
