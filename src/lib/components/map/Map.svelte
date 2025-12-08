@@ -31,6 +31,7 @@
     circlesRendered,
     zoomLevel,
     miniSvg,
+    selectedCountry,
   } from "./mapStates.svelte";
   import { renderMiniHexmap } from "./miniMap";
   import {
@@ -599,9 +600,15 @@
   <br/>
 
   {#if _selectedCountry.state}
-    <div class="country-overlay">
+    <div class="country-overlay relative flex">
+      <div class="absolute top-2 right-2 w-8 h-8 z-1000 cursor-pointer" onclick={() => selectedCountry.state = ""} role="button" style="position: absolute;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="4" y1="4" x2="20" y2="20" stroke="white"/>
+          <line x1="20" y1="4" x2="4" y2="20" stroke="white"/>
+        </svg>
+      </div>
       <!-- <button onclick={() => ($_selectedCountry = "")}>&nbsp;[X]&nbsp;</button> -->
-      <svg id="country-overlay" width="600" height="400" bind:this={miniSvg.state}></svg>
+      <svg class="relative h-full" id="country-overlay" width="600" height="400" bind:this={miniSvg.state}></svg>
       
     </div>
   {/if}
