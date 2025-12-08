@@ -282,33 +282,9 @@
 
   // Whenever selectedCountry changes, redraw the mini overlay
   $effect(() => {
-  if (!_selectedCountry.state || !geography.state.features || !miniSvg.state) return;
-  renderMiniHexmap(_selectedCountry.state, circleMetric.state, miniSvg.state);
-
-  // const countryFeature = geography.state.features.find(
-  //   (f: any) => f.properties.name === $_selectedCountry
-  // );
-  // console.log(`countryFeature: ${countryFeature}`)
-
-  // if (!countryFeature) return;
-
-  // const miniProjection = d3
-  //   .geoMercator()
-  //   .fitSize([miniWidth - 40, miniHeight - 40], countryFeature)
-  // const path = d3.geoPath().projection(miniProjection);
-  // console.log`path: ${path}`
-
-  // d3.select("#country-overlay").selectAll("*").remove();
-  // d3.select("#country-overlay")
-  //   .append("path")
-  //   .datum(countryFeature)
-  //   .attr("d", path)
-  //   .attr("fill", "#e0e0e0")
-  //   .attr("stroke", "#999")
-  //   .attr("stroke-width", 0.5)
-  //   .attr("transform", `translate(${20}, ${20})`);
-    
-});
+    if (!_selectedCountry.state || !geography.state.features || !miniSvg.state) return;
+    renderMiniHexmap(_selectedCountry.state, circleMetric.state, miniSvg.state);
+  });
 
   $inspect(startDateRaw.state);
 </script>
