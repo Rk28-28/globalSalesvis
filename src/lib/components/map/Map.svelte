@@ -72,10 +72,10 @@
     height?: number;
   };
 
-  let { width = 1000, height = 700 }: Props = $props();
+  let { width = 1000, height = 600 }: Props = $props();
 
   projection.state = d3
-    .geoMercator()
+    .geoEquirectangular()
     .scale(150)
     .translate([width / 2, height / 2]);
 
@@ -169,6 +169,21 @@
     circleMetrics.state = updateCircleMetrics();
   });
 
+  let oldStartDate = startDateRaw.state;
+  let oldEndDate = endDateRaw.state;
+  // should be running on animation, add date guards so it doesn't run on zoom
+  $effect(() => {
+    if (initialLoading) return;
+
+    if (oldStartDate != startDateRaw.state && oldEndDate != endDateRaw.state) {
+      logEffect('Circle size');
+      updateCircleSize();
+
+      oldStartDate = startDateRaw.state;
+      oldEndDate = endDateRaw.state;
+    }
+  });
+
   // runs when projectionType changes
   $effect(() => {
     if (initialLoading) return;
@@ -176,7 +191,7 @@
     logEffect(`Projection change: ${projectionType.state}`);
     if (projectionType.state == "2d") {
       projection.state = d3
-        .geoMercator()
+        .geoEquirectangular()
         .scale(150)
         .translate([width / 2, height / 2]);
     } else {
@@ -294,6 +309,8 @@
   //   .attr("transform", `translate(${20}, ${20})`);
     
 });
+
+  $inspect(startDateRaw.state);
 </script>
 
 <main class="map-component">
@@ -603,6 +620,7 @@
       />
     </div>
   </div>
+  <br/>
 
   {#if _selectedCountry.state}
     <div class="country-overlay">

@@ -151,18 +151,19 @@ export function updateCircleSize() {
     const country = d.country;
     const city = d.city;
     const data = circleMetrics.state[country]?.[city];
-    if (!data || !radiusScale.state) return;
+    if (!data || !radiusScale.state) {
+      d3.select(this)
+        .transition()
+        .duration(250)
+        .attr("r", 0);
+        return;
+    }
 
     const value = data[metric];
     const radius =
       metric === "profit"
         ? radiusScale.state(Math.abs(value))
         : radiusScale.state(value);
-
-    const fill =
-      metric === "profit" && value < 0
-        ? "rgba(255, 0, 0, 0.6)"
-        : "rgba(255, 100, 0, 0.6)";
 
     d3.select(this)
       .transition()
