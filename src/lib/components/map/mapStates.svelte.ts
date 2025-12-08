@@ -4,6 +4,7 @@ import type { Order } from "@data-types/order";
 import type { CircleMetricData } from "@data-types/circleData";
 import type { HeatmapMetric, CircleMetric } from "@data-types/metrics";
 import type { ProjectionType } from "@data-types/mapState";
+import { writable } from "svelte/store";
 
 export type StateWrapper<T> = { state: T };
 function makeStateWrapper<T>(p: T): StateWrapper<T> {
@@ -19,9 +20,12 @@ let circleGeoData = $state<any>(makeStateWrapper(null));
 let geography = $state<any>(makeStateWrapper(null));
 let countriesLoading = $state<StateWrapper<boolean>>(makeStateWrapper(true));
 let selectedCountry = $state<StateWrapper<string>>(makeStateWrapper(""));
+// const selectedCountry = writable<string>("");
 let mapContainer = $state<StateWrapper<HTMLDivElement | null>>(makeStateWrapper(null));
 let projection = $state<StateWrapper<d3.GeoProjection | null>>(makeStateWrapper(null));
 let projectionType = $state<StateWrapper<ProjectionType>>(makeStateWrapper("2d"));
+let countrySelection: d3.Selection<SVGPathElement, any, SVGGElement, unknown>;
+
 
 // circle states
 let circleMetrics = $state<
@@ -66,6 +70,7 @@ let tooltip = $state<StateWrapper<HTMLDivElement | null>>(makeStateWrapper(null)
 let radiusScale = $state<StateWrapper<d3.ScalePower<number, number, never> | null>>(
   makeStateWrapper(null),
 );
+let miniSvg = $state<StateWrapper<SVGSVGElement | null>>(makeStateWrapper(null));
 
 //animation
 let animationDate = $state<StateWrapper<Date>>(makeStateWrapper(new Date()));
@@ -108,4 +113,5 @@ export {
   projection,
   projectionType,
   zoomLevel,
+  miniSvg,
 };

@@ -5,6 +5,7 @@ import {
   geography,
   countriesLoading,
   g,
+  zoomLevel,
   selectedCountry,
   startDateRaw,
   endDateRaw,
@@ -17,6 +18,7 @@ import {
 import { getMostCommonCategory, normalizeCountryName } from "./utils";
 import type { HeatmapMetric } from "@data-types/metrics";
 import { showTooltip, hideTooltip } from "./tooltip.svelte";
+import { get } from "svelte/store";
 
 let colorScale: d3.ScaleSequential<string> | null = null;
 
@@ -127,9 +129,16 @@ export function loadCountries(projection: d3.GeoProjection, loaders: boolean = f
       (d: any, i: number) => geography.state.features[i].properties.name,
     )
     .on("click", function (_: any, d: any) {
-      const country = d.properties.name;
-      selectedCountry.state = selectedCountry.state === country ? "" : country;
+      let country = d.properties.name;
+        selectedCountry.state = selectedCountry.state === country ? "" : country;
     });
+    // .on("mouseover", function (_: any, d: any) {
+    //   // if (zoomLevel.state >= 3) {
+    //     const hovered = d.properties.name;
+    //     selectedCountry.state = hovered;
+    //     console.log(`Selected country: ${selectedCountry.state}`)
+    //   // }
+    // });
 }
 
 // Function to update country metric data based on date range
@@ -423,4 +432,5 @@ function getColorForMetric(countryData: any, metric: HeatmapMetric): string {
     default:
       return "#e0e0e0";
   }
+  
 }
