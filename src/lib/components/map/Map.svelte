@@ -62,6 +62,7 @@
   } from "./globeFunctions";
   import { Toggle } from "@components/toggle";
   import { logEffect } from "./logger";
+  import DoubleDateSlider from "./DoubleDateSlider.svelte";
 
   let statusMsg = $state("Loading data");
   let initialLoading = $state(true);
@@ -468,6 +469,7 @@
   </div>
 
   <div class="date-controls">
+    <DoubleDateSlider/>
     <div class="control-group">
       <label for="start-date" class="label-text">Start date</label>
       <input type="date" id="start-date" bind:value={startDateRaw.state} />
