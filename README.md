@@ -29,10 +29,10 @@ The team members and their major contributions are as follows:
 
 Datasets used:
 
-* Order dataset: <a href="https://www.kaggle.com/datasets/rohitgrewal/global-superstore-data/data">
-* City dataset: <a href="https://simplemaps.com/data/world-cities">
-* GeoJSON data: <a href="https://github.com/holtzy/D3-graph-gallery/blob/master/DATA/world.geojson">
+* Order dataset: [Found here](https://www.kaggle.com/datasets/rohitgrewal/global-superstore-data/data)
+* City dataset: [Found here](https://simplemaps.com/data/world-cities)
+* GeoJSON data: [Found here](https://github.com/holtzy/D3-graph-gallery/blob/master/DATA/world.geojson)
 
-Additionally this code was used as slider template: <a href="https://svelte.dev/playground/75d34e46cbe64bb68b7c2ac2c61931ce?version=5.45.9">
+Additionally this code was used as slider template: [Code](https://svelte.dev/playground/75d34e46cbe64bb68b7c2ac2c61931ce?version=5.45.9)
 
-Special thanks to our professor Zhu-Tian Chen and TA Pan Hao for teaching and providing direction.
+Special thanks to our professor Zhu-Tian Chen and TA Pan Hao for excellent teaching and direction.
