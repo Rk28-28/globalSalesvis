@@ -62,10 +62,16 @@
   } from "./globeFunctions";
   import { Toggle } from "@components/toggle";
   import { logEffect } from "./logger";
+  import { renderMiniHexmap3d, clearScene } from "./miniMap3d"
+  import { initThree, scene, destroyThree } from "./threeSetup"
 
   let statusMsg = $state("Loading data");
   let initialLoading = $state(true);
   let showComparisonModal = $state(false);
+
+  // for 3d mini map
+  let miniThreeContainer: HTMLDivElement;
+  let miniThreeInitialized = false;
 
   // make the props as minimal as possible so that other people can easily hook into the map
   type Props = {
@@ -74,6 +80,8 @@
   };
 
   let { width = 1000, height = 600 }: Props = $props();
+
+  let show3d = $state(false); 
 
   projection.state = d3
     .geoEquirectangular()
@@ -282,10 +290,38 @@
   const miniHeight = 400;
 
   // Whenever selectedCountry changes, redraw the mini overlay
+  // $effect(() => {
+  //   if (!_selectedCountry.state || !geography.state.features || !miniSvg.state) return;
+  //   renderMiniHexmap(_selectedCountry.state, circleMetric.state, miniSvg.state);
+  // });
+
+// 3d minimap
   $effect(() => {
-    if (!_selectedCountry.state || !geography.state.features || !miniSvg.state) return;
-    renderMiniHexmap(_selectedCountry.state, circleMetric.state, miniSvg.state);
+    if (!_selectedCountry.state || !geography.state.features){
+      destroyThree();
+      miniThreeInitialized = false;
+      return;
+    }
+    
+    if (!miniThreeContainer){
+      destroyThree();
+      miniThreeInitialized = false;
+      return;
+    }
+
+    if (show3d) {
+      if (!miniThreeInitialized) {
+        initThree(miniThreeContainer, miniWidth, miniHeight);
+        miniThreeInitialized = true;
+      }
+      renderMiniHexmap3d(_selectedCountry.state, circleMetric.state);
+    } else {
+      destroyThree();
+      miniThreeInitialized = false;
+      renderMiniHexmap(_selectedCountry.state, circleMetric.state, miniSvg.state);
+    }
   });
+
 </script>
 
 <main class="map-component">
@@ -599,14 +635,28 @@
 
   {#if _selectedCountry.state}
     <div class="country-overlay relative flex">
-      <div class="absolute top-2 right-2 w-8 h-8 z-1000 cursor-pointer" onclick={() => selectedCountry.state = ""} role="button" style="position: absolute;">
+      <div class="absolute top-2 right-10 w-8 h-8 z-1000 cursor-pointer" onclick={() => show3d = !show3d}>
+        {#if show3d}
+          <svg viewBox="0 0 24 24">
+            <text x="0" y="16" fill="white" font-size="14">2D</text>
+          </svg>
+        {:else}
+          <svg viewBox="0 0 24 24">
+            <text x="0" y="16" fill="white" font-size="14">3D</text>
+          </svg>
+        {/if}
+      </div>
+      <div class="absolute top-2 right-2 w-8 h-8 z-1000 cursor-pointer" onclick={() => {selectedCountry.state = ""; destroyThree(); miniThreeInitialized = false;}} role="button" style="position: absolute;">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <line x1="4" y1="4" x2="20" y2="20" stroke="white"/>
           <line x1="20" y1="4" x2="4" y2="20" stroke="white"/>
         </svg>
       </div>
       <!-- <button onclick={() => ($_selectedCountry = "")}>&nbsp;[X]&nbsp;</button> -->
-      <svg class="relative h-full" id="country-overlay" width="600" height="400" bind:this={miniSvg.state}></svg>
+      <div id="country-overlay" class="relative" style="width: 600px; height: 400px;">
+        <svg bind:this={miniSvg.state} width="600" height="400" style="display: {show3d ? 'none' : 'block'}"></svg>
+        <div bind:this={miniThreeContainer} style="display: {show3d ? 'block' : 'none'}; width: 100%; height: 100%;"></div>
+      </div>
       
     </div>
   {/if}

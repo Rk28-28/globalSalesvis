@@ -27,11 +27,13 @@ export function renderMiniHexmap(selectedCountryName: string, metric: CircleMetr
     (f: any) => f.properties.name === selectedCountryName
   );
 
+  const countryKey =
+    selectedCountryName === "USA"
+      ? "United States"
+      : selectedCountryName;
+
   if (!countryFeature) return;
 
-  if (countryFeature.properties.name === 'USA'){
-    countryFeature.properties.name = 'United States'
-  }
 
   svg.select("g.zoom-container")?.remove();
   const container = svg.append("g").attr("class", "zoom-container");
@@ -40,13 +42,13 @@ export function renderMiniHexmap(selectedCountryName: string, metric: CircleMetr
   const path = geoPath(projection);
 
   const cityPoints: Point[] = [];
-  const countryData = circleMetrics.state[selectedCountryName];
+  const countryData = circleMetrics.state[countryKey];
   if (countryData) {
     Object.entries(countryData).forEach(([city, data]) => {
       const value = data[metric as keyof CircleMetricData];
       if (!value) return;
 
-      const coord = circleGeoData.state[selectedCountryName]?.[city];
+      const coord = circleGeoData.state[countryKey]?.[city];
       if (!coord) return;
 
       const [x, y] = projection([coord.lng, coord.lat])!;
