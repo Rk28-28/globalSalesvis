@@ -7,9 +7,9 @@ function initThree(containerEl, width, height) {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(45, width / height, 1, 5000);
 
-  camera.position.set(0, 0, 600);  
-  camera.up.set(0, 0, 1);             
-  camera.lookAt(0, 0, 0);             
+  camera.position.set(0, 0, 600);
+  camera.up.set(0, 0, 1);
+  camera.lookAt(0, 0, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(width, height);
@@ -20,8 +20,7 @@ function initThree(containerEl, width, height) {
   controls.enablePan = false;
 
   controls.minPolarAngle = Math.PI / 6;
-  controls.maxPolarAngle = Math.PI/2.5;
-
+  controls.maxPolarAngle = Math.PI / 2.5;
 
   controls.target.set(0, 0, 0);
   controls.update();
@@ -36,8 +35,8 @@ function initThree(containerEl, width, height) {
   animate();
 }
 function animate() {
-  if(!controls|| !renderer || !scene || !camera){
-    return
+  if (!controls || !renderer || !scene || !camera) {
+    return;
   }
   requestAnimationFrame(animate);
   controls.update();

@@ -13,9 +13,13 @@ interface Point {
 const baseHexRadius = 17;
 let scale = 1;
 
-export function renderMiniHexmap(selectedCountryName: string, metric: CircleMetric, miniSvg: SVGSVGElement) {
+export function renderMiniHexmap(
+  selectedCountryName: string,
+  metric: CircleMetric,
+  miniSvg: SVGSVGElement,
+) {
   if (!geography.state?.features) return;
-  scale = 1
+  scale = 1;
 
   const svg = d3.select(miniSvg);
   svg.selectAll("*").remove();
@@ -24,21 +28,20 @@ export function renderMiniHexmap(selectedCountryName: string, metric: CircleMetr
   const height = +svg.attr("height");
 
   const countryFeature = geography.state.features.find(
-    (f: any) => f.properties.name === selectedCountryName
+    (f: any) => f.properties.name === selectedCountryName,
   );
 
   const countryKey =
-    selectedCountryName === "USA"
-      ? "United States"
-      : selectedCountryName;
+    selectedCountryName === "USA" ? "United States" : selectedCountryName;
 
   if (!countryFeature) return;
-
 
   svg.select("g.zoom-container")?.remove();
   const container = svg.append("g").attr("class", "zoom-container");
 
-  const projection = d3.geoMercator().fitSize([width - 10, height - 10], countryFeature);
+  const projection = d3
+    .geoMercator()
+    .fitSize([width - 10, height - 10], countryFeature);
   const path = geoPath(projection);
 
   const cityPoints: Point[] = [];
@@ -57,83 +60,87 @@ export function renderMiniHexmap(selectedCountryName: string, metric: CircleMetr
   }
 
   const hex = d3Hexbin<Point>()
-    .x(d => d.x)
-    .y(d => d.y)
-    .radius(baseHexRadius/scale);
+    .x((d) => d.x)
+    .y((d) => d.y)
+    .radius(baseHexRadius / scale);
 
   const bins = hex(cityPoints);
 
-  const maxValue = d3.max(bins, b => d3.sum(b, p => p.value)) || 1;
+  const maxValue = d3.max(bins, (b) => d3.sum(b, (p) => p.value)) || 1;
   const color = d3.scaleSequential(d3.interpolateReds).domain([0, maxValue]);
 
-  container.append("clipPath")
+  container
+    .append("clipPath")
     .attr("id", "country-clip")
     .append("path")
     .datum(countryFeature)
     .attr("d", path as any);
 
-  container.append("g")
+  container
+    .append("g")
     .attr("class", "hex-layer")
     .attr("clip-path", "url(#country-clip)")
     .selectAll("path")
     .data(bins)
     .join("path")
     .attr("d", hex.hexagon())
-    .attr("transform", d => `translate(${d.x},${d.y})`)
-    .attr("fill", d => color(d3.sum(d, p => p.value)))
+    .attr("transform", (d) => `translate(${d.x},${d.y})`)
+    .attr("fill", (d) => color(d3.sum(d, (p) => p.value)))
     .attr("stroke", "#ccc")
     .attr("stroke-width", 0.5);
 
-  container.append("path")
+  container
+    .append("path")
     .datum(countryFeature)
     .attr("d", path as any)
     .attr("fill", "none")
     .attr("stroke", "#999")
     .attr("stroke-width", 1);
 
-    const legend = svg.append("g").attr("class", "legend");
-    updateLegend(maxValue, legend, svg, height, color)
+  const legend = svg.append("g").attr("class", "legend");
+  updateLegend(maxValue, legend, svg, height, color);
 
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
+  const zoom = d3
+    .zoom<SVGSVGElement, unknown>()
     .scaleExtent([1, 10]) // min/max zoom
-      .on("zoom", (event) => {
-    // live panning/zooming without recomputing expensive hexbin
-    scale = event.transform.k;
-    container.attr("transform", event.transform);
+    .on("zoom", (event) => {
+      // live panning/zooming without recomputing expensive hexbin
+      scale = event.transform.k;
+      container.attr("transform", event.transform);
     })
     .on("end", (event) => {
-        // user has stopped zooming → now recompute hexes
-        scale = event.transform.k;
-        rebuildHexes(container, cityPoints, legend, svg, height);
+      // user has stopped zooming → now recompute hexes
+      scale = event.transform.k;
+      rebuildHexes(container, cityPoints, legend, svg, height);
     });
-
 
   svg.call(zoom);
 }
 
 function rebuildHexes(container, cityPoints, legend, svg, height) {
   const hex = d3Hexbin<Point>()
-    .x(d => d.x)
-    .y(d => d.y)
+    .x((d) => d.x)
+    .y((d) => d.y)
     .radius(baseHexRadius / scale);
 
   const bins = hex(cityPoints);
 
-  const maxValue = d3.max(bins, b => d3.sum(b, p => p.value)) || 1;
+  const maxValue = d3.max(bins, (b) => d3.sum(b, (p) => p.value)) || 1;
   const color = d3.scaleSequential(d3.interpolateReds).domain([0, maxValue]);
-  updateLegend(maxValue, legend, svg, height, color)
+  updateLegend(maxValue, legend, svg, height, color);
 
   container.selectAll("g.hex-layer").remove();
 
-  container.append("g")
+  container
+    .append("g")
     .attr("class", "hex-layer")
     .attr("clip-path", "url(#country-clip)")
     .selectAll("path")
     .data(bins)
     .join("path")
     .attr("d", hex.hexagon())
-    .attr("transform", d => `translate(${d.x},${d.y})`)
-    .attr("fill", d => color(d3.sum(d, p => p.value)))
+    .attr("transform", (d) => `translate(${d.x},${d.y})`)
+    .attr("fill", (d) => color(d3.sum(d, (p) => p.value)))
     .attr("stroke", "#ccc")
     .attr("stroke-width", 0.5);
 }
@@ -144,9 +151,7 @@ function updateLegend(maxValue: number, legend, svg, height, color) {
   const legendWidth = 120;
   const legendHeight = 10;
 
-  const defs = svg.select("defs").empty()
-    ? svg.append("defs")
-    : svg.select("defs");
+  const defs = svg.select("defs").empty() ? svg.append("defs") : svg.select("defs");
 
   const gradientId = "hexmap-gradient";
 

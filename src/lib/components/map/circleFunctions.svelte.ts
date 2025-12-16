@@ -50,8 +50,6 @@ function mapCircleMetrics(
 
 // update the scale. should be triggered on metric changes
 export async function updateRadiusScale() {
-  console.log("last metric: " + lastMetric);
-  console.log("this metric: " + circleMetric.state);
   // don't update if metric has not changed
   if (lastMetric && lastMetric == circleMetric.state) {
     console.log("Metric didn't change, not updating radius scale");
@@ -152,11 +150,8 @@ export function updateCircleSize() {
     const city = d.city;
     const data = circleMetrics.state[country]?.[city];
     if (!data || !radiusScale.state) {
-      d3.select(this)
-        .transition()
-        .duration(250)
-        .attr("r", 0);
-        return;
+      d3.select(this).transition().duration(250).attr("r", 0);
+      return;
     }
 
     const value = data[metric];
@@ -387,8 +382,10 @@ export function renderCircles(
       return showCircles.state ? radiusScale.state(absValue) / zoomLevel.state : 0;
     })
     .attr("fill", (d) =>
-      metric === "profit" && d.metricValue < 0
-        ? "rgba(255, 0, 0, 0.6)"
+      metric === "profit"
+        ? d.metricValue < 0
+          ? "rgba(255, 0, 0, 0.6)"
+          : "rgba(0, 200, 0, 0.6)"
         : "rgba(255, 100, 0, 0.6)",
     )
     .attr("stroke", "#fff")
@@ -399,8 +396,10 @@ export function renderCircles(
 
       const hoveredRadius = radiusScale.state(Math.abs(d.metricValue)) * 1.3;
       const hoverFill =
-        metric === "profit" && d.metricValue < 0
-          ? "rgba(255, 50, 50, 0.9)"
+        metric === "profit"
+          ? d.metricValue < 0
+            ? "rgba(255, 50, 50, 0.9)"
+            : "rgba(50, 200, 50, 0.9)"
           : "rgba(255, 150, 0, 0.9)";
       d3.select(this)
         .attr("fill", hoverFill)
@@ -417,8 +416,10 @@ export function renderCircles(
     .on("mouseout", function (event, d) {
       const absValue = metric === "profit" ? Math.abs(d.metricValue) : d.metricValue;
       const normalFill =
-        metric === "profit" && d.metricValue < 0
-          ? "rgba(255, 0, 0, 0.6)"
+        metric === "profit"
+          ? d.metricValue < 0
+            ? "rgba(255, 0, 0, 0.6)"
+            : "rgba(0, 200, 0, 0.6)"
           : "rgba(255, 100, 0, 0.6)";
       d3.select(this)
         .attr("fill", normalFill)

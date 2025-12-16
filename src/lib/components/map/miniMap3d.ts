@@ -21,34 +21,25 @@ const HEX_RADIUS = 7;
 const COUNTRY_BASE_HEIGHT = 4;
 const MAX_HEX_HEIGHT = 80;
 
-export function renderMiniHexmap3d(
-  selectedCountryName: string,
-  metric: CircleMetric
-) {
-
+export function renderMiniHexmap3d(selectedCountryName: string, metric: CircleMetric) {
   if (!geography.state?.features) return;
   clearScene(scene);
 
   const countryFeature = geography.state.features.find(
-    (f: any) =>
-      f.properties.name === selectedCountryName 
+    (f: any) => f.properties.name === selectedCountryName,
   );
 
-    const countryKey =
-    selectedCountryName === "USA"
-      ? "United States"
-      : selectedCountryName;
+  const countryKey =
+    selectedCountryName === "USA" ? "United States" : selectedCountryName;
 
   if (!countryFeature) return;
 
   // ---- projection ----
-  const projection = d3
-    .geoMercator()
-    .fitSize([WIDTH, HEIGHT], countryFeature);
+  const projection = d3.geoMercator().fitSize([WIDTH, HEIGHT], countryFeature);
 
   const centroid = projection(d3.geoCentroid(countryFeature));
   if (!centroid) return;
-  
+
   const [cx, cy] = centroid;
 
   const polygons = extractAllPolygons(countryFeature.geometry);
@@ -71,7 +62,7 @@ export function renderMiniHexmap3d(
       else shape.lineTo(px, -py);
     });
 
-    holes.forEach(hole => {
+    holes.forEach((hole) => {
       const holePath = new THREE.Path();
       hole.forEach(([lon, lat], i) => {
         const projected = projection([lon, lat]);
@@ -98,7 +89,7 @@ export function renderMiniHexmap3d(
         color: 0xe0e0e0,
         roughness: 0.9,
         metalness: 0.0,
-      })
+      }),
     );
 
     countryGroup.add(mesh);
@@ -106,8 +97,6 @@ export function renderMiniHexmap3d(
 
   const cityPoints: Point[] = [];
   const countryData = circleMetrics.state[countryKey];
-
-  
 
   if (countryData) {
     for (const [city, data] of Object.entries(countryData)) {
@@ -124,7 +113,7 @@ export function renderMiniHexmap3d(
       cityPoints.push({
         x: x - cx,
         y: y - cy,
-        value
+        value,
       });
     }
   }
@@ -132,29 +121,23 @@ export function renderMiniHexmap3d(
   if (!cityPoints.length) return;
 
   const hexbin = d3Hexbin<Point>()
-    .x(d => d.x)
-    .y(d => d.y)
+    .x((d) => d.x)
+    .y((d) => d.y)
     .radius(HEX_RADIUS);
 
   const bins = hexbin(cityPoints);
 
-  const maxValue =
-    d3.max(bins, b => d3.sum(b, p => p.value)) || 1;
+  const maxValue = d3.max(bins, (b) => d3.sum(b, (p) => p.value)) || 1;
 
-  const heightScale = d3
-    .scaleLinear()
-    .domain([0, maxValue])
-    .range([2, MAX_HEX_HEIGHT]);
+  const heightScale = d3.scaleLinear().domain([0, maxValue]).range([2, MAX_HEX_HEIGHT]);
 
-  const colorScale = d3
-    .scaleSequential(d3.interpolateReds)
-    .domain([0, maxValue]);
+  const colorScale = d3.scaleSequential(d3.interpolateReds).domain([0, maxValue]);
 
   const hexGroup = new THREE.Group();
   countryGroup.add(hexGroup);
 
   for (const bin of bins) {
-    const rawValue = d3.sum(bin, p => p.value);
+    const rawValue = d3.sum(bin, (p) => p.value);
     const height = heightScale(rawValue);
 
     const geom = makeHexPrism(HEX_RADIUS, height);
@@ -178,12 +161,10 @@ interface PolygonRings {
   holes: Ring[];
 }
 
-function extractAllPolygons(
-  geometry: {
-    type: "Polygon" | "MultiPolygon";
-    coordinates: any;
-  }
-): PolygonRings[] {
+function extractAllPolygons(geometry: {
+  type: "Polygon" | "MultiPolygon";
+  coordinates: any;
+}): PolygonRings[] {
   if (!geometry || !geometry.coordinates) {
     throw new Error("bad geometry");
   }
@@ -207,7 +188,7 @@ function makeHexPrism(radius: number, height: number) {
   const shape = new THREE.Shape();
 
   for (let i = 0; i < 6; i++) {
-    const angle = Math.PI / 3 * i + Math.PI / 6;
+    const angle = (Math.PI / 3) * i + Math.PI / 6;
     const x = radius * Math.cos(angle);
     const y = radius * Math.sin(angle);
 
@@ -232,7 +213,7 @@ export function clearScene(scene: THREE.Scene) {
       scene.remove(obj);
       obj.geometry?.dispose?.();
       if (Array.isArray(obj.material)) {
-        obj.material.forEach(m => m.dispose());
+        obj.material.forEach((m) => m.dispose());
       } else {
         obj.material?.dispose?.();
       }

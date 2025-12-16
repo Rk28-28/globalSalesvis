@@ -26,7 +26,6 @@ let projection = $state<StateWrapper<d3.GeoProjection | null>>(makeStateWrapper(
 let projectionType = $state<StateWrapper<ProjectionType>>(makeStateWrapper("2d"));
 let countrySelection: d3.Selection<SVGPathElement, any, SVGGElement, unknown>;
 
-
 // circle states
 let circleMetrics = $state<
   StateWrapper<Record<string, Record<string, CircleMetricData>>>

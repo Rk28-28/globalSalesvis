@@ -63,8 +63,8 @@
   import { Toggle } from "@components/toggle";
   import { logEffect } from "./logger";
   import DoubleDateSlider from "./DoubleDateSlider.svelte";
-  import { renderMiniHexmap3d, clearScene } from "./miniMap3d"
-  import { initThree, scene, destroyThree } from "./threeSetup"
+  import { renderMiniHexmap3d, clearScene } from "./miniMap3d";
+  import { initThree, scene, destroyThree } from "./threeSetup";
 
   let statusMsg = $state("Loading data");
   let initialLoading = $state(true);
@@ -82,7 +82,7 @@
 
   let { width = 1000, height = 600 }: Props = $props();
 
-  let show3d = $state(false); 
+  let show3d = $state(false);
 
   projection.state = d3
     .geoEquirectangular()
@@ -186,7 +186,7 @@
     if (initialLoading) return;
 
     if (oldStartDate != startDateRaw.state && oldEndDate != endDateRaw.state) {
-      logEffect('Circle size');
+      logEffect("Circle size");
       updateCircleSize();
 
       oldStartDate = startDateRaw.state;
@@ -296,15 +296,15 @@
   //   renderMiniHexmap(_selectedCountry.state, circleMetric.state, miniSvg.state);
   // });
 
-// 3d minimap
+  // 3d minimap
   $effect(() => {
-    if (!_selectedCountry.state || !geography.state.features){
+    if (!_selectedCountry.state || !geography.state.features) {
       destroyThree();
       miniThreeInitialized = false;
       return;
     }
-    
-    if (!miniThreeContainer){
+
+    if (!miniThreeContainer) {
       destroyThree();
       miniThreeInitialized = false;
       return;
@@ -322,7 +322,6 @@
       renderMiniHexmap(_selectedCountry.state, circleMetric.state, miniSvg.state);
     }
   });
-
 </script>
 
 <main class="map-component">
@@ -505,7 +504,7 @@
   </div>
 
   <div class="date-controls">
-    <DoubleDateSlider/>
+    <DoubleDateSlider />
     <div class="control-group">
       <label for="start-date" class="label-text">Start date</label>
       <input type="date" id="start-date" bind:value={startDateRaw.state} />
@@ -633,11 +632,14 @@
       />
     </div>
   </div>
-  <br/>
+  <br />
 
   {#if _selectedCountry.state}
     <div class="country-overlay relative flex">
-      <div class="absolute top-2 right-10 w-8 h-8 z-1000 cursor-pointer" onclick={() => show3d = !show3d}>
+      <div
+        class="absolute top-2 right-10 w-8 h-8 z-1000 cursor-pointer"
+        onclick={() => (show3d = !show3d)}
+      >
         {#if show3d}
           <svg viewBox="0 0 24 24">
             <text x="0" y="16" fill="white" font-size="14">2D</text>
@@ -648,18 +650,34 @@
           </svg>
         {/if}
       </div>
-      <div class="absolute top-2 right-2 w-8 h-8 z-1000 cursor-pointer" onclick={() => {selectedCountry.state = ""; destroyThree(); miniThreeInitialized = false;}} role="button" style="position: absolute;">
+      <div
+        class="absolute top-2 right-2 w-8 h-8 z-1000 cursor-pointer"
+        onclick={() => {
+          selectedCountry.state = "";
+          destroyThree();
+          miniThreeInitialized = false;
+        }}
+        role="button"
+        style="position: absolute;"
+      >
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="4" y1="4" x2="20" y2="20" stroke="white"/>
-          <line x1="20" y1="4" x2="4" y2="20" stroke="white"/>
+          <line x1="4" y1="4" x2="20" y2="20" stroke="white" />
+          <line x1="20" y1="4" x2="4" y2="20" stroke="white" />
         </svg>
       </div>
       <!-- <button onclick={() => ($_selectedCountry = "")}>&nbsp;[X]&nbsp;</button> -->
       <div id="country-overlay" class="relative" style="width: 600px; height: 400px;">
-        <svg bind:this={miniSvg.state} width="600" height="400" style="display: {show3d ? 'none' : 'block'}"></svg>
-        <div bind:this={miniThreeContainer} style="display: {show3d ? 'block' : 'none'}; width: 100%; height: 100%;"></div>
+        <svg
+          bind:this={miniSvg.state}
+          width="600"
+          height="400"
+          style="display: {show3d ? 'none' : 'block'}"
+        ></svg>
+        <div
+          bind:this={miniThreeContainer}
+          style="display: {show3d ? 'block' : 'none'}; width: 100%; height: 100%;"
+        ></div>
       </div>
-      
     </div>
   {/if}
 
