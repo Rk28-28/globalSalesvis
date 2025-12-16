@@ -62,6 +62,7 @@
   } from "./globeFunctions";
   import { Toggle } from "@components/toggle";
   import { logEffect } from "./logger";
+  import DoubleDateSlider from "./DoubleDateSlider.svelte";
   import { renderMiniHexmap3d, clearScene } from "./miniMap3d"
   import { initThree, scene, destroyThree } from "./threeSetup"
 
@@ -504,6 +505,7 @@
   </div>
 
   <div class="date-controls">
+    <DoubleDateSlider/>
     <div class="control-group">
       <label for="start-date" class="label-text">Start date</label>
       <input type="date" id="start-date" bind:value={startDateRaw.state} />
