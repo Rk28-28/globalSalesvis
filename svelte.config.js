@@ -7,13 +7,17 @@ const config = {
 
   kit: {
     adapter: adapter({
-      pages: 'build',
-      assets: 'build',
-      fallback: 'index.html'
+      pages: 'build',       // output HTML goes here
+      assets: 'build',      // static assets
+      fallback: 'index.html' // SPA fallback for your map route
     }),
 
     paths: {
-      base: '/globalSalesvis'
+      base: '/globalSalesvis' // your repo name for GitHub Pages
+    },
+
+    prerender: {
+      default: true
     },
 
     alias: {
