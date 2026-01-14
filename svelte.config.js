@@ -1,31 +1,23 @@
-import adapter from '@sveltejs/adapter-static';
-import sveltePreprocess from 'svelte-preprocess';
+import adapter from "@sveltejs/adapter-static";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  preprocess: sveltePreprocess(),
+  // Consult https://svelte.dev/docs/kit/integrations
+  // for more information about preprocessors
+  preprocess: vitePreprocess(),
 
   kit: {
-    adapter: adapter({
-      pages: 'build',       // output HTML goes here
-      assets: 'build',      // static assets
-      fallback: 'index.html' // SPA fallback for your map route
-    }),
-
-    paths: {
-      base: '/globalSalesvis' // your repo name for GitHub Pages
-    },
-
-    prerender: {
-      default: true
-    },
-
+    // adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
+    // If your environment is not supported, or you settled on a specific environment, switch out the adapter.
+    // See https://svelte.dev/docs/kit/adapters for more information about adapters.
+    adapter: adapter(),
     alias: {
-      '@data-types': 'src/lib/types',
-      '@utils': 'src/lib/utils',
-      '@components': 'src/lib/components'
-    }
-  }
+      "@data-types": "src/lib/types",
+      "@utils": "src/lib/utils",
+      "@components": "src/lib/components",
+    },
+  },
 };
 
 export default config;
