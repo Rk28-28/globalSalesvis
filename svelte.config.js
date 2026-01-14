@@ -9,11 +9,11 @@ const config = {
     adapter: adapter({
       pages: "build",
       assets: "build",
-      fallback: "index.html", // REQUIRED for GitHub Pages
+      fallback: "index.html",
     }),
 
     paths: {
-      base: "/globalSalesvis", // REQUIRED for repo-based Pages
+      base: "/globalSalesvis",
     },
 
     alias: {
