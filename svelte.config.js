@@ -1,7 +1,7 @@
-// svelte.config.js
 import adapter from "@sveltejs/adapter-static";
 import { vitePreprocess } from "@sveltejs/kit/vite";
 
+/** @type {import('@sveltejs/kit').Config} */
 const config = {
   preprocess: vitePreprocess(),
 
@@ -9,11 +9,13 @@ const config = {
     adapter: adapter({
       pages: "build",
       assets: "build",
-      fallback: "index.html"
+      fallback: "index.html", // SPA fallback for GitHub Pages
     }),
+
     paths: {
-      base: "/globalSalesvis"  // <--- THIS IS CRUCIAL
+      base: "/globalSalesvis" // replace with your repo name
     },
+
     alias: {
       "@data-types": "src/lib/types",
       "@utils": "src/lib/utils",

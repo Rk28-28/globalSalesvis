@@ -45,49 +45,31 @@ function cityGeoFromCSV(csv: any): CircleGeoData {
   };
 }
 
-// cache data in localStorage
 export async function loadData(): Promise<Order[]> {
-  // if (localStorage.getItem("orders")) {
-  //     const orders = JSON.parse(localStorage.getItem("orders") ?? "[]") as Order[];
-  //     return orders;
-  // }
-
   const resp = await fetch(asset("/data/orders.csv"));
   const text = await resp.text();
-  const csv =
-    Papa.parse<Record<string, any>>(text, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
-    }).data ?? [];
+  const csv = Papa.parse<Record<string, any>>(text, {
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: true,
+  }).data ?? [];
 
-  const ret = csv.map(orderFromCSV);
-  // localStorage.setItem("orders", JSON.stringify(ret));
-  // return ret.slice(0, 1000);
-  return ret;
+  return csv.map(orderFromCSV);
 }
 
 export async function loadGeographyData(): Promise<any> {
-  // if (localStorage.getItem("world")) {
-  //     const world = JSON.parse(localStorage.getItem("world") ?? "{}");
-  //     return world;
-  // }
-
-  const world: any = await d3.json("/data/geo.json");
-  // localStorage.setItem("world", JSON.stringify(world));
+  const world: any = await d3.json(asset("/data/geo.json"));
   return world;
 }
 
 export async function loadCityLatLngData(): Promise<any> {
   const resp = await fetch(asset("/data/worldcities.csv"));
   const text = await resp.text();
-  const csv =
-    Papa.parse<Record<string, any>>(text, {
-      header: true,
-      skipEmptyLines: true,
-    }).data ?? [];
+  const csv = Papa.parse<Record<string, any>>(text, {
+    header: true,
+    skipEmptyLines: true,
+  }).data ?? [];
 
-  // Country name mappings (Worldcities country : Map country)
   const countryNameMap: Record<string, string> = {
     "Congo (Brazzaville)": "Republic of the Congo",
     "Congo (Kinshasa)": "Democratic Republic of the Congo",
@@ -112,3 +94,4 @@ export async function loadCityLatLngData(): Promise<any> {
 
   return out;
 }
+
